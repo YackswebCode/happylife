@@ -6,44 +6,40 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
+        Schema::disableForeignKeyConstraints();
+        
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
-            $table->timestamps();
-        });
+    $table->id();
+    $table->string('name');
+    $table->string('email')->unique();
+    $table->string('username')->unique();
+    $table->string('phone')->nullable();
+    $table->string('password');
+    $table->string('sponsor_id')->nullable();
+    $table->string('placement_id')->nullable();
+    $table->string('placement_position')->nullable();
+    $table->foreignId('package_id')->nullable()->constrained('packages');
+    $table->string('country')->nullable();
+    $table->string('state')->nullable();
+    $table->foreignId('pickup_center_id')->nullable()->constrained('pickup_centers');
+    $table->foreignId('rank_id')->nullable()->constrained('ranks');
+    $table->integer('left_count')->default(0);
+    $table->integer('right_count')->default(0);
+    $table->decimal('total_pv', 12, 2)->default(0);
+    $table->decimal('current_pv', 12, 2)->default(0);
+    $table->string('status')->default('active');
+    $table->timestamp('registration_date')->nullable();
+    $table->enum('role', ['admin', 'company', 'member'])->default('member');
+    $table->rememberToken();
+    $table->timestamps();
+});
 
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
-
-        Schema::create('sessions', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->longText('payload');
-            $table->integer('last_activity')->index();
-        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('sessions');
     }
 };
