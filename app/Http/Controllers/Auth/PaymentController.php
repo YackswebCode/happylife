@@ -98,7 +98,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Activate user after successful online payment - SIMPLIFIED VERSION
+     * Activate user after successful online payment
      */
     public function activateUser(Request $request)
     {
@@ -187,7 +187,7 @@ class PaymentController extends Controller
             
             \Log::info('Payment record created', ['payment_id' => $payment->id]);
             
-            // STEP 2: Activate user - SIMPLIFIED
+            // STEP 2: Activate user
             $user->status = 'active';
             $user->payment_status = 'paid';
             $user->activated_at = now();
@@ -196,7 +196,7 @@ class PaymentController extends Controller
             
             \Log::info('User activated', ['user_id' => $user->id, 'status' => $user->status]);
             
-            // STEP 3: Process commissions (try-catch each step separately)
+            // STEP 3: Process commissions
             try {
                 // Direct sponsor bonus
                 if ($user->sponsor_id && $package->direct_bonus_amount > 0) {
@@ -209,18 +209,38 @@ class PaymentController extends Controller
                         if (!isset($sponsor->direct_sponsors_count)) {
                             $sponsor->direct_sponsors_count = 0;
                         }
+                        if (!isset($sponsor->direct_bonus_total)) {
+                            $sponsor->direct_bonus_total = 0;
+                        }
                         
                         $oldBalance = $sponsor->commission_wallet_balance;
-                        $sponsor->commission_wallet_balance += $package->direct_bonus_amount;
+                        $bonusAmount = $package->direct_bonus_amount;
+                        
+                        // Update commission wallet balance
+                        $sponsor->commission_wallet_balance += $bonusAmount;
+                        
+                        // Update direct bonus total
+                        $sponsor->direct_bonus_total += $bonusAmount;
+                        
+                        // Update direct sponsors count
                         $sponsor->direct_sponsors_count += 1;
+                        
                         $sponsor->save();
+                        
+                        \Log::info('Direct sponsor bonus updated', [
+                            'sponsor_id' => $sponsor->id,
+                            'bonus_amount' => $bonusAmount,
+                            'old_balance' => $oldBalance,
+                            'new_balance' => $sponsor->commission_wallet_balance,
+                            'direct_bonus_total' => $sponsor->direct_bonus_total
+                        ]);
                         
                         // Create commission record
                         Commission::create([
                             'user_id' => $sponsor->id,
                             'downline_id' => $user->id,
                             'payment_id' => $payment->id,
-                            'amount' => $package->direct_bonus_amount,
+                            'amount' => $bonusAmount,
                             'type' => 'direct_sponsor',
                             'description' => 'Direct sponsor bonus for ' . $user->name . ' (' . $package->name . ')',
                             'status' => 'paid'
@@ -230,21 +250,26 @@ class PaymentController extends Controller
                         WalletTransaction::create([
                             'user_id' => $sponsor->id,
                             'wallet_type' => 'commission',
-                            'amount' => $package->direct_bonus_amount,
+                            'amount' => $bonusAmount,
                             'type' => 'credit',
                             'description' => 'Direct sponsor bonus from ' . $user->name,
                             'balance_before' => $oldBalance,
                             'balance_after' => $sponsor->commission_wallet_balance,
                         ]);
                         
-                        \Log::info('Direct sponsor bonus awarded', [
-                            'sponsor_id' => $sponsor->id,
-                            'amount' => $package->direct_bonus_amount
-                        ]);
-                        
                         // Indirect bonus (up to 3 generations)
                         $this->processIndirectBonus($sponsor, $user, $package, $payment);
+                    } else {
+                        \Log::warning('Sponsor not found for user', [
+                            'user_id' => $user->id,
+                            'sponsor_id' => $user->sponsor_id
+                        ]);
                     }
+                } else {
+                    \Log::info('No direct sponsor bonus to award', [
+                        'has_sponsor' => !empty($user->sponsor_id),
+                        'bonus_amount' => $package->direct_bonus_amount
+                    ]);
                 }
                 
                 // Update PV counts
@@ -253,6 +278,7 @@ class PaymentController extends Controller
             } catch (\Exception $e) {
                 // Don't rollback the whole transaction if commission processing fails
                 \Log::error('Commission processing error (non-critical): ' . $e->getMessage());
+                \Log::error('Commission error trace: ' . $e->getTraceAsString());
             }
             
             DB::commit();
@@ -296,11 +322,13 @@ class PaymentController extends Controller
         
         for ($generation = 1; $generation <= 3; $generation++) {
             if (!$currentUser->sponsor_id) {
+                \Log::info('No more sponsors in upline chain at generation ' . $generation);
                 break;
             }
             
             $indirectUser = User::find($currentUser->sponsor_id);
             if (!$indirectUser) {
+                \Log::warning('Indirect user not found for generation ' . $generation);
                 break;
             }
             
@@ -310,10 +338,28 @@ class PaymentController extends Controller
             if (!isset($indirectUser->commission_wallet_balance)) {
                 $indirectUser->commission_wallet_balance = 0;
             }
+            if (!isset($indirectUser->indirect_bonus_total)) {
+                $indirectUser->indirect_bonus_total = 0;
+            }
             
             $oldBalance = $indirectUser->commission_wallet_balance;
+            
+            // Update commission wallet balance
             $indirectUser->commission_wallet_balance += $indirectBonus;
+            
+            // Update indirect bonus total
+            $indirectUser->indirect_bonus_total += $indirectBonus;
+            
             $indirectUser->save();
+            
+            \Log::info('Indirect bonus awarded', [
+                'generation' => $generation,
+                'indirect_user_id' => $indirectUser->id,
+                'amount' => $indirectBonus,
+                'old_balance' => $oldBalance,
+                'new_balance' => $indirectUser->commission_wallet_balance,
+                'indirect_bonus_total' => $indirectUser->indirect_bonus_total
+            ]);
             
             // Create commission record
             Commission::create([
@@ -351,15 +397,36 @@ class PaymentController extends Controller
         if ($newUser->placement_id) {
             $placementUser = User::find($newUser->placement_id);
             if ($placementUser) {
-                if ($newUser->placement_position === 'left') {
-                    $placementUser->left_count = ($placementUser->left_count ?? 0) + 1;
-                } elseif ($newUser->placement_position === 'right') {
-                    $placementUser->right_count = ($placementUser->right_count ?? 0) + 1;
+                // Initialize values if they don't exist
+                if (!isset($placementUser->left_count)) {
+                    $placementUser->left_count = 0;
+                }
+                if (!isset($placementUser->right_count)) {
+                    $placementUser->right_count = 0;
+                }
+                if (!isset($placementUser->total_pv)) {
+                    $placementUser->total_pv = 0;
+                }
+                if (!isset($placementUser->current_pv)) {
+                    $placementUser->current_pv = 0;
                 }
                 
-                $placementUser->total_pv = ($placementUser->total_pv ?? 0) + $package->pv;
-                $placementUser->current_pv = ($placementUser->current_pv ?? 0) + $package->pv;
+                if ($newUser->placement_position === 'left') {
+                    $placementUser->left_count += 1;
+                } elseif ($newUser->placement_position === 'right') {
+                    $placementUser->right_count += 1;
+                }
+                
+                $placementUser->total_pv += $package->pv;
+                $placementUser->current_pv += $package->pv;
                 $placementUser->save();
+                
+                \Log::info('Placement user PV updated', [
+                    'placement_id' => $placementUser->id,
+                    'left_count' => $placementUser->left_count,
+                    'right_count' => $placementUser->right_count,
+                    'total_pv' => $placementUser->total_pv
+                ]);
             }
         }
         
@@ -380,9 +447,23 @@ class PaymentController extends Controller
                 break;
             }
             
-            $sponsor->total_pv = ($sponsor->total_pv ?? 0) + $pv;
-            $sponsor->current_pv = ($sponsor->current_pv ?? 0) + $pv;
+            // Initialize values if they don't exist
+            if (!isset($sponsor->total_pv)) {
+                $sponsor->total_pv = 0;
+            }
+            if (!isset($sponsor->current_pv)) {
+                $sponsor->current_pv = 0;
+            }
+            
+            $sponsor->total_pv += $pv;
+            $sponsor->current_pv += $pv;
             $sponsor->save();
+            
+            \Log::info('Sponsor chain PV updated', [
+                'sponsor_id' => $sponsor->id,
+                'added_pv' => $pv,
+                'total_pv' => $sponsor->total_pv
+            ]);
             
             $currentUser = $sponsor;
         }
