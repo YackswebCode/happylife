@@ -585,21 +585,7 @@
                 </button>
                 
                 <div class="d-flex align-items-center ms-auto">
-                    <!-- Notifications -->
-                    <div class="dropdown me-3">
-                        <button class="btn btn-light position-relative rounded-circle" type="button" data-bs-toggle="dropdown" style="width: 40px; height: 40px;">
-                            <i class="bi bi-bell"></i>
-                            <span class="notification-badge">3</span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width: 300px;">
-                            <li><h6 class="dropdown-header">Notifications</h6></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-cash-stack text-success me-2"></i> New commission earned</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-person-plus text-primary me-2"></i> Downline registered</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-wallet2 text-warning me-2"></i> Wallet credited</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-center text-red" href="#"><i class="bi bi-bell me-1"></i> View All</a></li>
-                        </ul>
-                    </div>
+              
                     
                     <!-- User Dropdown -->
                     <div class="dropdown">
@@ -612,7 +598,6 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow">
                             <li><a class="dropdown-item" href="{{ route('member.profile.index') }}"><i class="bi bi-person me-2"></i> Profile</a></li>
-                            <li><a class="dropdown-item" href="{{ route('member.settings.index') }}"><i class="bi bi-gear me-2"></i> Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
