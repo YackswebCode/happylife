@@ -40,7 +40,7 @@
         /* Sidebar Styles - FIXED WITH SCROLL */
         #sidebar {
             min-height: 100vh;
-            height: 100vh; /* ADDED */
+            height: 100vh;
             background: linear-gradient(180deg, #222222 0%, #1a1a1a 100%);
             color: white;
             width: 250px;
@@ -51,14 +51,14 @@
             box-shadow: 3px 0 15px rgba(0,0,0,0.15);
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Hide scrollbar from main container */
+            overflow: hidden;
         }
         
         #sidebar .sidebar-header {
             padding: 25px 20px;
             background: rgba(230, 51, 35, 0.1);
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            flex-shrink: 0; /* Prevent header from shrinking */
+            flex-shrink: 0;
         }
         
         #sidebar .sidebar-header h3 {
@@ -71,17 +71,15 @@
         /* Scrollable navigation container */
         .sidebar-nav-container {
             flex: 1;
-            overflow-y: auto; /* Enable vertical scrolling */
-            overflow-x: hidden; /* Hide horizontal scroll */
+            overflow-y: auto;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            min-height: 0;      /* ADDED */
-            max-height: 100%;   /* ADDED */
-            /* Drag cursor */
-            cursor: grab;       /* ADDED: indicates draggable area */
+            min-height: 0;
+            max-height: 100%;
+            cursor: grab;
         }
         
-        /* show grabbing cursor while dragging */
         .sidebar-nav-container.dragging {
             cursor: grabbing;
             user-select: none;
@@ -92,7 +90,7 @@
             padding: 20px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             background: rgba(0,0,0,0.2);
-            flex-shrink: 0; /* Prevent shrinking */
+            flex-shrink: 0;
         }
         
         /* Navigation Menu - Scrollable */
@@ -102,8 +100,6 @@
             min-height: 0;
         }
 
-
-        
         .sidebar-menu ul {
             padding: 0;
             margin: 0;
@@ -145,7 +141,7 @@
             padding: 20px;
             border-top: 1px solid rgba(255,255,255,0.1);
             background: rgba(0,0,0,0.2);
-            flex-shrink: 0; /* Prevent footer from shrinking */
+            flex-shrink: 0;
         }
         
         /* Content Wrapper */
@@ -321,7 +317,6 @@
                 margin-left: 0;
             }
             
-            /* Adjust scrollbar for mobile */
             .sidebar-nav-container::-webkit-scrollbar {
                 width: 4px;
             }
@@ -419,10 +414,9 @@
             background: #1a8da8;
         }
         
-        /* Scroll indicator for sidebar (optional) */
         .scroll-indicator {
             position: absolute;
-            bottom: 80px; /* Above logout button */
+            bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
             color: rgba(255,255,255,0.5);
@@ -482,12 +476,13 @@
                         </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('member.genealogy*') ? 'active' : '' }}">
-                        <a href="{{ route('member.genealogy') }}" class="nav-link">
+                        <a href="{{ route('member.genealogy.index') }}" class="nav-link">
                             <i class="bi bi-diagram-3-fill"></i> Genealogy
                         </a>
                     </li>
+                    <!-- FIXED: changed from member.wallet to member.wallet.index -->
                     <li class="nav-item {{ request()->routeIs('member.wallet*') ? 'active' : '' }}">
-                        <a href="{{ route('member.wallet') }}" class="nav-link">
+                        <a href="{{ route('member.wallet.index') }}" class="nav-link">
                             <i class="bi bi-wallet2"></i> Wallets
                         </a>
                     </li>
@@ -512,18 +507,33 @@
                         </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('member.ranks*') ? 'active' : '' }}">
-                        <a href="{{ route('member.ranks') }}" class="nav-link">
+                        <a href="{{ route('member.ranks.index') }}" class="nav-link">
                             <i class="bi bi-trophy-fill"></i> Ranks
                         </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('member.withdraw*') ? 'active' : '' }}">
-                        <a href="{{ route('member.withdraw') }}" class="nav-link">
+                        <a href="{{ route('member.withdraw.index') }}" class="nav-link">
                             <i class="bi bi-bank"></i> Withdraw
                         </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('member.settings*') ? 'active' : '' }}">
-                        <a href="{{ route('member.settings') }}" class="nav-link">
+                        <a href="{{ route('member.settings.index') }}" class="nav-link">
                             <i class="bi bi-gear-fill"></i> Settings
+                        </a>
+                    </li>
+                    <li class="nav-item {{ request()->routeIs('member.orders*') ? 'active' : '' }}">
+                        <a href="{{ route('member.orders') }}" class="nav-link">
+                            <i class="bi bi-box-seam"></i> Orders
+                        </a>
+                    </li>
+                    <li class="nav-item {{ request()->routeIs('member.claim-product*') ? 'active' : '' }}">
+                        <a href="{{ route('member.claim-product.index') }}" class="nav-link">
+                            <i class="bi bi-gift-fill"></i> Claim Product
+                        </a>
+                    </li>
+                    <li class="nav-item {{ request()->routeIs('member.kyc*') ? 'active' : '' }}">
+                        <a href="{{ route('member.kyc.index') }}" class="nav-link">
+                            <i class="bi bi-shield-check"></i> KYC Verification
                         </a>
                     </li>
                     <!-- Additional menu items for testing scroll -->
@@ -604,7 +614,7 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow">
                             <li><a class="dropdown-item" href="{{ route('member.profile.index') }}"><i class="bi bi-person me-2"></i> Profile</a></li>
-                            <li><a class="dropdown-item" href="{{ route('member.settings') }}"><i class="bi bi-gear me-2"></i> Settings</a></li>
+                            <li><a class="dropdown-item" href="{{ route('member.settings.index') }}"><i class="bi bi-gear me-2"></i> Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
@@ -634,7 +644,6 @@
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('active');
             
-            // Update icon
             const icon = this.querySelector('i');
             if (sidebar.classList.contains('active')) {
                 icon.classList.remove('bi-list');
@@ -675,18 +684,15 @@
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
             
-            // Auto-hide sidebar on mobile on page load
             if (window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.remove('active');
             }
             
-            // Add scroll event listener to hide scroll indicator
             const navContainer = document.querySelector('.sidebar-nav-container');
             const scrollIndicator = document.querySelector('.scroll-indicator');
             
             if (navContainer && scrollIndicator) {
                 navContainer.addEventListener('scroll', function() {
-                    // If user has scrolled down, hide the indicator
                     if (this.scrollTop > 20) {
                         scrollIndicator.style.opacity = '0';
                         scrollIndicator.style.transition = 'opacity 0.3s';
@@ -716,7 +722,6 @@
             
             sidebarLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
-                    // If it's a hash link (#), prevent default and just close sidebar on mobile
                     if (this.getAttribute('href') === '#') {
                         e.preventDefault();
                         if (window.innerWidth < 768) {
@@ -728,7 +733,6 @@
                         return false;
                     }
                     
-                    // Close sidebar on mobile after clicking a link
                     if (window.innerWidth < 768) {
                         setTimeout(() => {
                             document.getElementById('sidebar').classList.remove('active');
@@ -741,7 +745,7 @@
             });
         });
         
-        // Add keyboard shortcut for toggling sidebar (Esc to close)
+        // Keyboard shortcut for toggling sidebar (Esc to close)
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && window.innerWidth < 768) {
                 const sidebar = document.getElementById('sidebar');
@@ -754,11 +758,7 @@
             }
         });
 
-        /* ---------------------------
-           Drag-scroll (hover + hold to scroll)
-           - allows click+drag on desktop and touch-drag on mobile
-           - preserves normal clicks when not dragging
-           ----------------------------*/
+        /* Drag-scroll (hover + hold to scroll) */
         (function() {
             const nav = document.querySelector('.sidebar-nav-container');
             if (!nav) return;
@@ -768,9 +768,7 @@
             let startScrollTop = 0;
             let preventClick = false;
 
-            // Mouse events
             nav.addEventListener('mousedown', function(e) {
-                // Only left-button
                 if (e.button !== 0) return;
                 isDown = true;
                 nav.classList.add('dragging');
@@ -783,8 +781,8 @@
                 if (!isDown) return;
                 e.preventDefault();
                 const y = e.pageY - nav.getBoundingClientRect().top;
-                const walk = (y - startY); // positive when dragging down
-                if (Math.abs(walk) > 5) preventClick = true; // threshold so small moves are clicks
+                const walk = (y - startY);
+                if (Math.abs(walk) > 5) preventClick = true;
                 nav.scrollTop = startScrollTop - walk;
             });
 
@@ -793,12 +791,10 @@
                     if (!isDown) return;
                     isDown = false;
                     nav.classList.remove('dragging');
-                    // small timeout to restore cursor gracefully
                     setTimeout(()=> nav.style.removeProperty('cursor'), 0);
                 });
             });
 
-            // Prevent link click after drag
             nav.addEventListener('click', function(e) {
                 if (preventClick) {
                     const a = e.target.closest('a');
@@ -808,9 +804,8 @@
                         preventClick = false;
                     }
                 }
-            }, true); // capture to stop before link handlers
+            }, true);
 
-            // Touch events for mobile swiping
             nav.addEventListener('touchstart', function(e) {
                 if (e.touches.length !== 1) return;
                 startY = e.touches[0].pageY - nav.getBoundingClientRect().top;
@@ -824,12 +819,11 @@
                 nav.scrollTop = startScrollTop - walk;
             }, {passive: false});
 
-            // Improve UX: show native scrollbar when hovered (optional)
             nav.addEventListener('mouseenter', function() {
                 nav.style.scrollbarWidth = 'auto';
             });
             nav.addEventListener('mouseleave', function() {
-                nav.style.scrollbarWidth = ''; // revert
+                nav.style.scrollbarWidth = '';
             });
         })();
     </script>

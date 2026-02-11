@@ -167,4 +167,51 @@ public function kycs()
 {
     return $this->hasMany(Kyc::class);
 }
+
+// User.php
+public function leftChild()
+{
+    return $this->hasOne(User::class, 'placement_id', 'id')
+                ->where('placement_position', 'left');
+}
+
+public function rightChild()
+{
+    return $this->hasOne(User::class, 'placement_id', 'id')
+                ->where('placement_position', 'right');
+}
+
+// app/Models/User.php
+
+public function getWalletBalance($type)
+{
+    $wallet = $this->wallets()->where('type', $type)->first();
+    return $wallet ? $wallet->balance : 0;
+}
+
+public function getCommissionWalletAttribute()
+{
+    return $this->getWalletBalance('commission');
+}
+
+public function getRegistrationWalletAttribute()
+{
+    return $this->getWalletBalance('registration');
+}
+
+public function getRankWalletAttribute()
+{
+    return $this->getWalletBalance('rank');
+}
+
+public function getShoppingWalletAttribute()
+{
+    return $this->getWalletBalance('shopping');
+}
+
+// Ensure the relationship exists
+public function wallets()
+{
+    return $this->hasMany(Wallet::class);
+}
 }

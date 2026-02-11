@@ -11,7 +11,6 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\VerifyController;
 use App\Http\Controllers\Auth\PaymentController;
-use App\Http\Controllers\DashboardController;
 
 // MEMBER CONTROLLERS
 use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
@@ -31,7 +30,7 @@ use App\Http\Controllers\Member\KycController;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| WEB ROUTES
 |--------------------------------------------------------------------------
 */
 
@@ -48,7 +47,7 @@ Route::get('/faq', [LandingController::class, 'faq'])->name('faq');
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
 
-// AJAX endpoints
+// AJAX endpoints for registration
 Route::get('/check-username/{username}', [RegisterController::class, 'checkUsername']);
 Route::get('/check-referral/{code}', [RegisterController::class, 'checkReferralCode']);
 
@@ -74,72 +73,96 @@ Route::get('/email/verify', [VerifyController::class, 'showVerifyForm'])->name('
 Route::post('/email/verify', [VerifyController::class, 'verify'])->name('verification.verify');
 Route::post('/email/verify/resend', [VerifyController::class, 'resend'])->name('verification.resend');
 
-// ================= PAYMENT ROUTES =================
+// ================= PAYMENT ROUTES (AFTER VERIFICATION) =================
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/payment', [PaymentController::class, 'showPayment'])->name('payment.show');
     Route::post('/payment/bank-transfer', [PaymentController::class, 'processBankTransfer'])->name('payment.bank-transfer');
     Route::post('/payment/activate', [PaymentController::class, 'activateUser'])->name('payment.activate');
 });
 
-// ================= MEMBER AREA ROUTES =================
+// ================= MEMBER AREA – ONE SINGLE GROUP =================
 Route::prefix('member')->name('member.')->middleware(['auth', 'verified'])->group(function () {
 
-    // Dashboard
+    // DASHBOARD
     Route::get('/dashboard', [MemberDashboardController::class, 'index'])->name('dashboard');
 
-    // ========= PROFILE =========
+    // PROFILE
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'index'])->name('index');
         Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
         Route::put('/', [ProfileController::class, 'update'])->name('update');
     });
 
-    // Genealogy
-    Route::get('/genealogy', [GenealogyController::class, 'index'])->name('genealogy');
+    // GENEALOGY
+    Route::prefix('genealogy')->name('genealogy.')->group(function () {
+        Route::get('/', [GenealogyController::class, 'index'])->name('index');
+        Route::get('/load', [GenealogyController::class, 'loadChildren'])->name('load');
+    });
 
-    // Wallet
-    Route::get('/wallet', [WalletController::class, 'index'])->name('wallet');
+    // ===== WALLET SYSTEM – FULLY DEFINED =====
+    Route::prefix('wallet')->name('wallet.')->group(function () {
+        Route::get('/', [WalletController::class, 'index'])->name('index');
+        Route::get('/commission', [WalletController::class, 'commission'])->name('commission');
+        Route::get('/rank', [WalletController::class, 'rank'])->name('rank');
+        Route::get('/shopping', [WalletController::class, 'shopping'])->name('shopping');
+        Route::get('/transactions', [WalletController::class, 'transactions'])->name('transactions');
+        // Funding
+        Route::get('/funding', [WalletController::class, 'funding'])->name('funding');
+        Route::post('/pay/init', [WalletController::class, 'initPayment'])->name('pay.init');
+        Route::get('/pay/verify', [WalletController::class, 'verifyPayment'])->name('verify-payment');
+        Route::post('/request', [WalletController::class, 'requestFunding'])->name('request');
+    });
 
-    // Shopping
+    // SHOPPING MALL
     Route::get('/shopping', [ShoppingController::class, 'index'])->name('shopping');
 
-    // VTU Services
+    // VTU SERVICES
     Route::get('/vtu', [VTUController::class, 'index'])->name('vtu');
 
-    // Referrals
+    // REFERRALS
     Route::get('/referrals', [ReferralController::class, 'index'])->name('referrals');
 
-    // Commissions
+    // COMMISSIONS
     Route::get('/commissions', [CommissionController::class, 'index'])->name('commissions');
 
-    // Ranks
-    Route::get('/ranks', [RankController::class, 'index'])->name('ranks');
+    // RANKS
+    Route::prefix('ranks')->name('ranks.')->group(function () {
+        Route::get('/', [RankController::class, 'index'])->name('index');
+        Route::post('/claim', [RankController::class, 'claim'])->name('claim');
+    });
 
-    // Withdraw
-    Route::get('/withdraw', [WithdrawController::class, 'index'])->name('withdraw');
-    Route::post('/withdraw', [WithdrawController::class, 'store'])->name('withdraw.store');
+    // WITHDRAW
+    Route::prefix('withdraw')->name('withdraw.')->group(function () {
+        Route::get('/', [WithdrawController::class, 'index'])->name('index');
+        Route::post('/', [WithdrawController::class, 'store'])->name('store');
+    });
 
-    // Settings
-    Route::get('/settings', [SettingController::class, 'index'])->name('settings');
-    Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+    // SETTINGS
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [SettingController::class, 'index'])->name('index');
+        Route::put('/', [SettingController::class, 'update'])->name('update');
+    });
 
-    // Orders
+    // ORDERS
     Route::get('/orders', [OrderController::class, 'index'])->name('orders');
 
-    // Claim Product
-    Route::get('/claim-product', [ClaimProductController::class, 'index'])->name('claim-product');
-    Route::post('/claim-product', [ClaimProductController::class, 'store'])->name('claim-product.store');
+    // CLAIM PRODUCT
+    Route::prefix('claim-product')->name('claim-product.')->group(function () {
+        Route::get('/', [ClaimProductController::class, 'index'])->name('index');
+        Route::post('/', [ClaimProductController::class, 'store'])->name('store');
+    });
 
-    // ========= KYC VERIFICATION =========
+    // KYC VERIFICATION
     Route::prefix('kyc')->name('kyc.')->group(function () {
         Route::get('/', [KycController::class, 'index'])->name('index');
         Route::post('/', [KycController::class, 'store'])->name('store');
         Route::put('/{kyc}', [KycController::class, 'update'])->name('update');
         Route::get('/document/{filename}', [KycController::class, 'viewDocument'])->name('document');
     });
+
 });
 
-// Redirect `/dashboard` to `member.dashboard`
+// ================= REDIRECT /dashboard TO MEMBER DASHBOARD =================
 Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
     return redirect()->route('member.dashboard');
 });
