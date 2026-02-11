@@ -67,7 +67,7 @@
                         <a class="nav-link text-secondary" href="{{ route('contact') }}">Contact</a>
                     </li>
                     <li class="nav-item ms-lg-3">
-                        <a class="btn btn-outline-secondary me-2" href="{{ route('login') }}">Login</a>
+                        <a class="btn bg-teal-blue text-white me-2" href="{{ route('login') }}">Login</a>
                         <a class="btn bg-red-happylife text-white" href="{{ route('register') }}">Get Started</a>
                     </li>
                 </ul>

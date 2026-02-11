@@ -196,84 +196,19 @@ class PaymentController extends Controller
             
             \Log::info('User activated', ['user_id' => $user->id, 'status' => $user->status]);
             
-            // STEP 3: Process commissions
+            // STEP 3: Process commissions and PV
             try {
-                // Direct sponsor bonus
-                if ($user->sponsor_id && $package->direct_bonus_amount > 0) {
-                    $sponsor = User::find($user->sponsor_id);
-                    if ($sponsor) {
-                        // Initialize values if they don't exist
-                        if (!isset($sponsor->commission_wallet_balance)) {
-                            $sponsor->commission_wallet_balance = 0;
-                        }
-                        if (!isset($sponsor->direct_sponsors_count)) {
-                            $sponsor->direct_sponsors_count = 0;
-                        }
-                        if (!isset($sponsor->direct_bonus_total)) {
-                            $sponsor->direct_bonus_total = 0;
-                        }
-                        
-                        $oldBalance = $sponsor->commission_wallet_balance;
-                        $bonusAmount = $package->direct_bonus_amount;
-                        
-                        // Update commission wallet balance
-                        $sponsor->commission_wallet_balance += $bonusAmount;
-                        
-                        // Update direct bonus total
-                        $sponsor->direct_bonus_total += $bonusAmount;
-                        
-                        // Update direct sponsors count
-                        $sponsor->direct_sponsors_count += 1;
-                        
-                        $sponsor->save();
-                        
-                        \Log::info('Direct sponsor bonus updated', [
-                            'sponsor_id' => $sponsor->id,
-                            'bonus_amount' => $bonusAmount,
-                            'old_balance' => $oldBalance,
-                            'new_balance' => $sponsor->commission_wallet_balance,
-                            'direct_bonus_total' => $sponsor->direct_bonus_total
-                        ]);
-                        
-                        // Create commission record
-                        Commission::create([
-                            'user_id' => $sponsor->id,
-                            'downline_id' => $user->id,
-                            'payment_id' => $payment->id,
-                            'amount' => $bonusAmount,
-                            'type' => 'direct_sponsor',
-                            'description' => 'Direct sponsor bonus for ' . $user->name . ' (' . $package->name . ')',
-                            'status' => 'paid'
-                        ]);
-                        
-                        // Create wallet transaction
-                        WalletTransaction::create([
-                            'user_id' => $sponsor->id,
-                            'wallet_type' => 'commission',
-                            'amount' => $bonusAmount,
-                            'type' => 'credit',
-                            'description' => 'Direct sponsor bonus from ' . $user->name,
-                            'balance_before' => $oldBalance,
-                            'balance_after' => $sponsor->commission_wallet_balance,
-                        ]);
-                        
-                        // Indirect bonus (up to 3 generations)
-                        $this->processIndirectBonus($sponsor, $user, $package, $payment);
-                    } else {
-                        \Log::warning('Sponsor not found for user', [
-                            'user_id' => $user->id,
-                            'sponsor_id' => $user->sponsor_id
-                        ]);
-                    }
-                } else {
-                    \Log::info('No direct sponsor bonus to award', [
-                        'has_sponsor' => !empty($user->sponsor_id),
-                        'bonus_amount' => $package->direct_bonus_amount
-                    ]);
-                }
+                // 1. Update placement user counts
+                $this->updatePlacementUserCounts($user);
                 
-                // Update PV counts
-                $this->updatePvCounts($user, $package);
+                // 2. Update all PV counts (binary tree AND unilevel)
+                $this->updateAllPvCounts($user, $package);
+                
+                // 3. Process direct and indirect bonuses
+                $this->processDirectBonus($user, $package, $payment);
+                
+                // 4. Process pair bonuses from binary tree PV
+                $this->processPairBonuses($user, $package, $payment);
                 
             } catch (\Exception $e) {
                 // Don't rollback the whole transaction if commission processing fails
@@ -314,132 +249,109 @@ class PaymentController extends Controller
     }
 
     /**
-     * Process indirect bonus for up to 3 generations
+     * Update placement user's left_count or right_count
      */
-    private function processIndirectBonus($sponsor, $newUser, $package, $payment)
+    private function updatePlacementUserCounts($newUser)
     {
-        $currentUser = $sponsor;
-        
-        for ($generation = 1; $generation <= 3; $generation++) {
-            if (!$currentUser->sponsor_id) {
-                \Log::info('No more sponsors in upline chain at generation ' . $generation);
-                break;
-            }
-            
-            $indirectUser = User::find($currentUser->sponsor_id);
-            if (!$indirectUser) {
-                \Log::warning('Indirect user not found for generation ' . $generation);
-                break;
-            }
-            
-            $indirectBonus = $package->direct_bonus_amount * 0.10;
-            
-            // Initialize values if they don't exist
-            if (!isset($indirectUser->commission_wallet_balance)) {
-                $indirectUser->commission_wallet_balance = 0;
-            }
-            if (!isset($indirectUser->indirect_bonus_total)) {
-                $indirectUser->indirect_bonus_total = 0;
-            }
-            
-            $oldBalance = $indirectUser->commission_wallet_balance;
-            
-            // Update commission wallet balance
-            $indirectUser->commission_wallet_balance += $indirectBonus;
-            
-            // Update indirect bonus total
-            $indirectUser->indirect_bonus_total += $indirectBonus;
-            
-            $indirectUser->save();
-            
-            \Log::info('Indirect bonus awarded', [
-                'generation' => $generation,
-                'indirect_user_id' => $indirectUser->id,
-                'amount' => $indirectBonus,
-                'old_balance' => $oldBalance,
-                'new_balance' => $indirectUser->commission_wallet_balance,
-                'indirect_bonus_total' => $indirectUser->indirect_bonus_total
-            ]);
-            
-            // Create commission record
-            Commission::create([
-                'user_id' => $indirectUser->id,
-                'downline_id' => $newUser->id,
-                'payment_id' => $payment->id,
-                'amount' => $indirectBonus,
-                'type' => 'indirect_sponsor',
-                'generation' => $generation,
-                'description' => 'Indirect sponsor bonus (Gen ' . $generation . ') for ' . $newUser->name,
-                'status' => 'paid'
-            ]);
-            
-            // Create wallet transaction
-            WalletTransaction::create([
-                'user_id' => $indirectUser->id,
-                'wallet_type' => 'commission',
-                'amount' => $indirectBonus,
-                'type' => 'credit',
-                'description' => 'Indirect bonus from ' . $newUser->name . ' (Gen ' . $generation . ')',
-                'balance_before' => $oldBalance,
-                'balance_after' => $indirectUser->commission_wallet_balance,
-            ]);
-            
-            $currentUser = $indirectUser;
+        if (!$newUser->placement_id) {
+            return;
         }
+
+        $placementUser = User::find($newUser->placement_id);
+        if (!$placementUser) {
+            return;
+        }
+
+        if ($newUser->placement_position === 'left') {
+            $placementUser->left_count = ($placementUser->left_count ?? 0) + 1;
+        } else {
+            $placementUser->right_count = ($placementUser->right_count ?? 0) + 1;
+        }
+        
+        $placementUser->save();
+        
+        \Log::info('Placement user counts updated', [
+            'placement_id' => $placementUser->id,
+            'left_count' => $placementUser->left_count,
+            'right_count' => $placementUser->right_count
+        ]);
     }
 
     /**
-     * Update PV counts
+     * Update all PV counts (binary tree AND unilevel)
      */
-    private function updatePvCounts($newUser, $package)
+    private function updateAllPvCounts($newUser, $package)
     {
-        // Update placement user counts
-        if ($newUser->placement_id) {
-            $placementUser = User::find($newUser->placement_id);
-            if ($placementUser) {
-                // Initialize values if they don't exist
-                if (!isset($placementUser->left_count)) {
-                    $placementUser->left_count = 0;
-                }
-                if (!isset($placementUser->right_count)) {
-                    $placementUser->right_count = 0;
-                }
-                if (!isset($placementUser->total_pv)) {
-                    $placementUser->total_pv = 0;
-                }
-                if (!isset($placementUser->current_pv)) {
-                    $placementUser->current_pv = 0;
-                }
-                
-                if ($newUser->placement_position === 'left') {
-                    $placementUser->left_count += 1;
-                } elseif ($newUser->placement_position === 'right') {
-                    $placementUser->right_count += 1;
-                }
-                
-                $placementUser->total_pv += $package->pv;
-                $placementUser->current_pv += $package->pv;
-                $placementUser->save();
-                
-                \Log::info('Placement user PV updated', [
-                    'placement_id' => $placementUser->id,
-                    'left_count' => $placementUser->left_count,
-                    'right_count' => $placementUser->right_count,
-                    'total_pv' => $placementUser->total_pv
-                ]);
-            }
+        $pv = (float) $package->pv;
+        
+        // 1. Update new user's own PV
+        $newUser->total_pv = ($newUser->total_pv ?? 0) + $pv;
+        $newUser->current_pv = ($newUser->current_pv ?? 0) + $pv;
+        $newUser->save();
+        
+        \Log::info('New user PV updated', [
+            'user_id' => $newUser->id,
+            'total_pv' => $newUser->total_pv,
+            'current_pv' => $newUser->current_pv
+        ]);
+        
+        // 2. Update binary tree PV (left_pv/right_pv)
+        $this->updateBinaryTreePv($newUser, $pv);
+        
+        // 3. Update unilevel tree PV (sponsor chain)
+        $this->updateUnilevelTreePv($newUser, $pv);
+    }
+    
+    /**
+     * Update binary tree PV (left_pv/right_pv)
+     */
+    private function updateBinaryTreePv($newUser, $pv)
+    {
+        if (!$newUser->placement_id) {
+            return;
         }
         
-        // Update sponsor chain PV
-        $this->updateSponsorChainPv($newUser, $package->pv);
+        $currentUser = $newUser;
+        $currentSide = $newUser->placement_position;
+        
+        while ($currentUser && $currentUser->placement_id) {
+            $placementUser = User::find($currentUser->placement_id);
+            if (!$placementUser) {
+                break;
+            }
+            
+            // Initialize values
+            $placementUser->left_pv = $placementUser->left_pv ?? 0;
+            $placementUser->right_pv = $placementUser->right_pv ?? 0;
+            
+            // Add PV to the correct side
+            if ($currentSide === 'left') {
+                $placementUser->left_pv += $pv;
+            } else {
+                $placementUser->right_pv += $pv;
+            }
+            
+            $placementUser->save();
+            
+            \Log::info('Binary tree PV updated', [
+                'user_id' => $placementUser->id,
+                'side' => $currentSide,
+                'left_pv' => $placementUser->left_pv,
+                'right_pv' => $placementUser->right_pv
+            ]);
+            
+            // Move up the tree
+            $currentUser = $placementUser;
+            $currentSide = $placementUser->placement_position;
+        }
     }
-
+    
     /**
-     * Update sponsor chain PV
+     * Update unilevel tree PV (sponsor chain)
      */
-    private function updateSponsorChainPv($user, $pv)
+    private function updateUnilevelTreePv($newUser, $pv)
     {
-        $currentUser = $user;
+        $currentUser = $newUser;
         
         while ($currentUser && $currentUser->sponsor_id) {
             $sponsor = User::find($currentUser->sponsor_id);
@@ -447,25 +359,231 @@ class PaymentController extends Controller
                 break;
             }
             
-            // Initialize values if they don't exist
-            if (!isset($sponsor->total_pv)) {
-                $sponsor->total_pv = 0;
-            }
-            if (!isset($sponsor->current_pv)) {
-                $sponsor->current_pv = 0;
-            }
+            // Initialize values
+            $sponsor->total_pv = $sponsor->total_pv ?? 0;
+            $sponsor->current_pv = $sponsor->current_pv ?? 0;
             
+            // Add PV
             $sponsor->total_pv += $pv;
             $sponsor->current_pv += $pv;
+            
             $sponsor->save();
             
-            \Log::info('Sponsor chain PV updated', [
+            \Log::info('Unilevel tree PV updated', [
                 'sponsor_id' => $sponsor->id,
-                'added_pv' => $pv,
-                'total_pv' => $sponsor->total_pv
+                'total_pv' => $sponsor->total_pv,
+                'current_pv' => $sponsor->current_pv
             ]);
             
             $currentUser = $sponsor;
+        }
+    }
+    
+    /**
+     * Process direct bonus and indirect bonuses
+     */
+    private function processDirectBonus($newUser, $package, $payment)
+    {
+        if (!$newUser->sponsor_id || $package->direct_bonus_amount <= 0) {
+            return;
+        }
+        
+        $sponsor = User::find($newUser->sponsor_id);
+        if (!$sponsor) {
+            return;
+        }
+        
+        $bonusAmount = $package->direct_bonus_amount;
+        $oldBalance = $sponsor->commission_wallet_balance ?? 0;
+        
+        // Update sponsor's commission wallet and direct bonus total
+        $sponsor->commission_wallet_balance = $oldBalance + $bonusAmount;
+        $sponsor->direct_bonus_total = ($sponsor->direct_bonus_total ?? 0) + $bonusAmount;
+        $sponsor->direct_sponsors_count = ($sponsor->direct_sponsors_count ?? 0) + 1;
+        $sponsor->save();
+        
+        \Log::info('Direct bonus awarded', [
+            'sponsor_id' => $sponsor->id,
+            'bonus_amount' => $bonusAmount,
+            'old_balance' => $oldBalance,
+            'new_balance' => $sponsor->commission_wallet_balance
+        ]);
+        
+        // Create commission record
+        Commission::create([
+            'user_id' => $sponsor->id,
+            'type' => 'direct',
+            'amount' => $bonusAmount,
+            'description' => 'Direct sponsor bonus for ' . $newUser->name . ' (' . $package->name . ')',
+            'from_user_id' => $newUser->id,
+            'from_package_id' => $package->id,
+            'status' => 'paid',
+        
+        ]);
+        
+        
+        // Process indirect bonuses (up to 3 generations)
+        $this->processIndirectBonuses($sponsor, $newUser, $package, $payment);
+    }
+    
+    /**
+     * Process indirect bonuses for up to 3 generations
+     */
+    private function processIndirectBonuses($sponsor, $newUser, $package, $payment)
+    {
+        $currentUser = $sponsor;
+        
+        for ($generation = 1; $generation <= 3; $generation++) {
+            if (!$currentUser->sponsor_id) {
+                break;
+            }
+            
+            $indirectUser = User::find($currentUser->sponsor_id);
+            if (!$indirectUser) {
+                break;
+            }
+            
+            // Calculate bonus based on generation
+            $bonusPercentage = $this->getIndirectBonusPercentage($generation);
+            $indirectBonus = $package->direct_bonus_amount * $bonusPercentage;
+            
+            if ($indirectBonus <= 0) {
+                $currentUser = $indirectUser;
+                continue;
+            }
+            
+            $oldBalance = $indirectUser->commission_wallet_balance ?? 0;
+            
+            // Update commission wallet
+            $indirectUser->commission_wallet_balance = $oldBalance + $indirectBonus;
+            
+            // Update indirect bonus totals based on generation
+            if ($generation == 1) {
+                $indirectUser->indirect_level_2_bonus_total = ($indirectUser->indirect_level_2_bonus_total ?? 0) + $indirectBonus;
+            } elseif ($generation == 2) {
+                $indirectUser->indirect_level_3_bonus_total = ($indirectUser->indirect_level_3_bonus_total ?? 0) + $indirectBonus;
+            }
+            
+            $indirectUser->indirect_bonus_total = ($indirectUser->indirect_bonus_total ?? 0) + $indirectBonus;
+            $indirectUser->save();
+            
+            \Log::info('Indirect bonus awarded', [
+                'generation' => $generation,
+                'user_id' => $indirectUser->id,
+                'bonus_amount' => $indirectBonus,
+                'old_balance' => $oldBalance,
+                'new_balance' => $indirectUser->commission_wallet_balance
+            ]);
+            
+            // Create commission record
+            Commission::create([
+                'user_id' => $indirectUser->id,
+                'type' => 'indirect',
+                'amount' => $indirectBonus,
+                'description' => 'Indirect sponsor bonus (Gen ' . $generation . ') for ' . $newUser->name,
+                'from_user_id' => $newUser->id,
+                'from_package_id' => $package->id,
+                'status' => 'paid',
+              
+            ]);
+            
+         
+            
+            $currentUser = $indirectUser;
+        }
+    }
+    
+    /**
+     * Process pair bonuses from binary tree PV
+     */
+    private function processPairBonuses($newUser, $package, $payment)
+    {
+        $pv = (float) $package->pv;
+        
+        // Start from the placement user and go up
+        if (!$newUser->placement_id) {
+            return;
+        }
+        
+        $currentUser = User::find($newUser->placement_id);
+        $currentSide = $newUser->placement_position;
+        
+        while ($currentUser) {
+            // Initialize values
+            $currentUser->left_pv = $currentUser->left_pv ?? 0;
+            $currentUser->right_pv = $currentUser->right_pv ?? 0;
+            $currentUser->commission_wallet_balance = $currentUser->commission_wallet_balance ?? 0;
+            
+            // Calculate pairs
+            $leftPairs = floor($currentUser->left_pv / 40);
+            $rightPairs = floor($currentUser->right_pv / 40);
+            $pairs = (int) min($leftPairs, $rightPairs);
+            
+            if ($pairs > 0) {
+                $pairAmountPerPair = 1500.00;
+                $totalBonus = $pairs * $pairAmountPerPair;
+                
+                $oldBalance = $currentUser->commission_wallet_balance;
+                $currentUser->commission_wallet_balance = $oldBalance + $totalBonus;
+                
+                // Deduct used PV (40 PV from each leg per pair)
+                $usedPv = $pairs * 40;
+                $currentUser->left_pv -= $usedPv;
+                $currentUser->right_pv -= $usedPv;
+                
+                // Also reduce total_pv and current_pv
+                $currentUser->total_pv = ($currentUser->total_pv ?? 0) - ($usedPv * 2);
+                $currentUser->current_pv = ($currentUser->current_pv ?? 0) - ($usedPv * 2);
+                
+                $currentUser->save();
+                
+                \Log::info('Pair bonus calculated', [
+                    'user_id' => $currentUser->id,
+                    'pairs' => $pairs,
+                    'bonus_amount' => $totalBonus,
+                    'left_pv_after' => $currentUser->left_pv,
+                    'right_pv_after' => $currentUser->right_pv
+                ]);
+                
+                // Create commission record for pair bonus
+                Commission::create([
+                    'user_id' => $currentUser->id,
+                    'type' => 'pairing',
+                    'amount' => $totalBonus,
+                    'description' => 'Pair bonus for ' . $pairs . ' pair(s)',
+                    'from_user_id' => $newUser->id,
+                    'from_package_id' => $package->id,
+                    'status' => 'paid',
+                
+                ]);
+            
+            }
+            
+            // Move up the tree
+            if (!$currentUser->placement_id) {
+                break;
+            }
+            
+            $nextUser = User::find($currentUser->placement_id);
+            if (!$nextUser) {
+                break;
+            }
+            
+            $currentUser = $nextUser;
+            $currentSide = $currentUser->placement_position;
+        }
+    }
+    
+    /**
+     * Get indirect bonus percentage based on generation
+     */
+    private function getIndirectBonusPercentage($generation)
+    {
+        switch ($generation) {
+            case 1: return 0.10; // 10%
+            case 2: return 0.05; // 5%
+            case 3: return 0.025; // 2.5%
+            default: return 0;
         }
     }
 }

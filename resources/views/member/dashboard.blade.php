@@ -24,6 +24,33 @@
     </div>
 </div>
 
+<!-- Referral Code Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-2 text-dark-gray"><i class="bi bi-share-fill text-red me-2"></i>Your Referral Code</h5>
+                        <p class="text-muted mb-3">Share this code to refer new members and earn commissions</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div class="input-group">
+                                <input type="text" class="form-control border-end-0 bg-light" id="referralCode" 
+                                       value="{{ $user->referral_code ?? 'N/A' }}" readonly>
+                                <button class="btn btn-red" type="button" onclick="copyReferralCode()">
+                                    <i class="bi bi-clipboard"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Statistics Cards -->
 <div class="row mb-4">
     <div class="col-xl-3 col-md-6 mb-4">
@@ -177,56 +204,8 @@
 </div>
 
 <div class="row">
-    <!-- Recent Activities -->
-    <div class="col-lg-8 mb-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
-                <h5 class="mb-0 text-dark-gray"><i class="bi bi-clock-history text-red me-2"></i>Recent Activities</h5>
-                <button class="btn btn-sm btn-outline-red" onclick="alert('Coming soon!')">View All</button>
-            </div>
-            <div class="card-body">
-                @if($recent_activities->count() > 0)
-                <div class="activity-timeline">
-                    @foreach($recent_activities as $activity)
-                    <div class="activity-item">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="d-flex align-items-start">
-                                <div class="activity-icon me-3">
-                                    <i class="bi {{ $activity['icon'] }} {{ $activity['color'] }}"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1 text-dark-gray">{{ $activity['title'] }}</h6>
-                                    <p class="text-muted mb-1 small">{{ $activity['description'] }}</p>
-                                    <small class="text-muted">
-                                        <i class="bi bi-clock me-1"></i>
-                                        {{ $activity['date']->diffForHumans() }}
-                                    </small>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-light {{ $activity['color'] }} px-3 py-2">
-                                    {{ $activity['amount'] > 0 ? '+' : '' }}₦{{ number_format($activity['amount'], 2) }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-                @else
-                <div class="text-center py-5">
-                    <div class="mb-3">
-                        <i class="bi bi-activity fs-1 text-light-gray"></i>
-                    </div>
-                    <h6 class="text-muted mb-2">No recent activities</h6>
-                    <p class="text-muted small">Your activities will appear here</p>
-                </div>
-                @endif
-            </div>
-        </div>
-    </div>
-    
     <!-- Wallet Summary -->
-    <div class="col-lg-4 mb-4">
+    <div class="col-lg-12 mb-4">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white border-0 py-3">
                 <h5 class="mb-0 text-dark-gray"><i class="bi bi-wallet2 text-teal-blue me-2"></i>Wallet Summary</h5>
@@ -285,55 +264,17 @@
                         <span class="fw-bold text-teal-blue">₦{{ number_format($stats['shopping_balance'], 2) }}</span>
                     </div>
                 </div>
-                
-                <!-- Package Info -->
-                <div class="mt-4 pt-3 border-top">
-                    <h6 class="text-muted mb-3">Package Information</h6>
-                    <div class="card bg-light-red border-0">
-                        <div class="card-body">
-                            @if($user->package)
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="package-icon bg-red rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                    <i class="bi bi-box-seam text-white"></i>
-                                </div>
-                                <div>
-                                    <h5 class="mb-0 text-red">{{ $user->package->name }}</h5>
-                                    <small class="text-muted">Active Package</small>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Price</small>
-                                    <strong>₦{{ number_format($user->package->price, 2) }}</strong>
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-muted d-block">PV Value</small>
-                                    <strong>{{ $user->package->pv }} PV</strong>
-                                </div>
-                            </div>
-                            <div class="mt-3">
-                                <small class="text-muted">Includes product worth ₦{{ number_format($user->package->price, 2) }}</small>
-                            </div>
-                            @else
-                            <div class="text-center py-3">
-                                <i class="bi bi-box text-light-gray fs-1 mb-2"></i>
-                                <p class="text-muted mb-0">No package selected</p>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Network Stats -->
-<div class="row">
+<!-- Network PV Statistics -->
+<div class="row mb-4">
     <div class="col-12">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-0 py-3">
-                <h5 class="mb-0 text-dark-gray"><i class="bi bi-pie-chart-fill text-red me-2"></i>Network Statistics</h5>
+                <h5 class="mb-0 text-dark-gray"><i class="bi bi-bar-chart-fill text-red me-2"></i>Network PV Statistics</h5>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -343,8 +284,9 @@
                                 <div class="mb-3">
                                     <i class="bi bi-arrow-left-circle-fill fs-1 text-red"></i>
                                 </div>
-                                <h2 class="text-red mb-2">{{ $stats['left_count'] }}</h2>
-                                <p class="text-muted mb-0">Left Team</p>
+                                <h2 class="text-red mb-2">{{ number_format($user->left_pv, 1) }}</h2>
+                                <p class="text-muted mb-0">Left Team PV</p>
+                                <small class="text-muted">Members: {{ $stats['left_count'] }}</small>
                             </div>
                         </div>
                     </div>
@@ -355,8 +297,9 @@
                                 <div class="mb-3">
                                     <i class="bi bi-arrow-right-circle-fill fs-1 text-teal-blue"></i>
                                 </div>
-                                <h2 class="text-teal-blue mb-2">{{ $stats['right_count'] }}</h2>
-                                <p class="text-muted mb-0">Right Team</p>
+                                <h2 class="text-teal-blue mb-2">{{ number_format($user->right_pv, 1) }}</h2>
+                                <p class="text-muted mb-0">Right Team PV</p>
+                                <small class="text-muted">Members: {{ $stats['right_count'] }}</small>
                             </div>
                         </div>
                     </div>
@@ -365,10 +308,11 @@
                         <div class="card border-0 bg-light-purple h-100">
                             <div class="card-body text-center p-4">
                                 <div class="mb-3">
-                                    <i class="bi bi-diagram-2-fill fs-1 text-purple"></i>
+                                    <i class="bi bi-plus-circle-fill fs-1 text-purple"></i>
                                 </div>
-                                <h2 class="text-purple mb-2">{{ $stats['left_count'] + $stats['right_count'] }}</h2>
-                                <p class="text-muted mb-0">Total Team</p>
+                                <h2 class="text-purple mb-2">{{ number_format($user->left_pv + $user->right_pv, 1) }}</h2>
+                                <p class="text-muted mb-0">Total Network PV</p>
+                                <small class="text-muted">Members: {{ $stats['left_count'] + $stats['right_count'] }}</small>
                             </div>
                         </div>
                     </div>
@@ -378,11 +322,326 @@
     </div>
 </div>
 
+<!-- Bonus Breakdown -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 text-dark-gray"><i class="bi bi-trophy-fill text-warning me-2"></i>Bonus Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card border h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">Direct Bonus</h6>
+                                        <small class="text-muted">From direct referrals</small>
+                                    </div>
+                                    <span class="badge bg-success">₦{{ number_format($user->direct_bonus_total, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card border h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">Level 2 Bonus</h6>
+                                        <small class="text-muted">Indirect level 2</small>
+                                    </div>
+                                    <span class="badge bg-info">₦{{ number_format($user->indirect_level_2_bonus_total, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card border h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">Level 3 Bonus</h6>
+                                        <small class="text-muted">Indirect level 3</small>
+                                    </div>
+                                    <span class="badge bg-primary">₦{{ number_format($user->indirect_level_3_bonus_total, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card border h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">Matching Bonus</h6>
+                                        <small class="text-muted">PV matching bonus</small>
+                                    </div>
+                                    <span class="badge bg-warning">₦{{ number_format($user->matching_pv_bonus_total, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card border h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">Rank Bonus</h6>
+                                        <small class="text-muted">Rank achievement</small>
+                                    </div>
+                                    <span class="badge bg-purple">₦{{ number_format($user->rank_bonus_total, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card border h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">Repurchase Bonus</h6>
+                                        <small class="text-muted">From repurchases</small>
+                                    </div>
+                                    <span class="badge bg-teal">₦{{ number_format($user->repurchase_bonus_total, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="card border h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">Lifestyle Bonus</h6>
+                                        <small class="text-muted">Lifestyle achievement</small>
+                                    </div>
+                                    <span class="badge bg-pink">₦{{ number_format($user->lifestyle_bonus_total, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Package & Rank Information -->
+<div class="row">
+    <!-- Package Details -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 text-dark-gray"><i class="bi bi-box-seam text-red me-2"></i>Package Details</h5>
+            </div>
+            <div class="card-body">
+                @if($user->package)
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card bg-light-red border-0 h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="package-icon bg-red rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <i class="bi bi-box-seam text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0 text-red">{{ $user->package->name }}</h5>
+                                        <small class="text-muted">Active Package</small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Price</small>
+                                        <strong>₦{{ number_format($user->package->price, 2) }}</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">PV Value</small>
+                                        <strong>{{ $user->package->pv }} PV</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <td><small class="text-muted">Product Entitlement</small></td>
+                                        <td><strong>{{ $user->package->product_entitlement }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><small class="text-muted">Direct Bonus</small></td>
+                                        <td><strong>₦{{ number_format($user->package->direct_bonus_amount, 2) }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><small class="text-muted">Pairing Cap</small></td>
+                                        <td><strong>₦{{ number_format($user->package->pairing_cap, 2) }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><small class="text-muted">Status</small></td>
+                                        <td>
+                                            <span class="badge {{ $user->package->is_active ? 'bg-success' : 'bg-danger' }}">
+                                                {{ $user->package->is_active ? 'Active' : 'Inactive' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        @if($user->package->description)
+                        <div class="mt-3">
+                            <small class="text-muted">Description:</small>
+                            <p class="mb-0 small">{{ $user->package->description }}</p>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @else
+                <div class="text-center py-5">
+                    <i class="bi bi-box text-light-gray fs-1 mb-2"></i>
+                    <p class="text-muted mb-0">No package selected</p>
+                    <button class="btn btn-sm btn-red mt-2" onclick="alert('Package selection coming soon!')">
+                        Select Package
+                    </button>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rank Details -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 text-dark-gray"><i class="bi bi-award-fill text-warning me-2"></i>Rank Information</h5>
+            </div>
+            <div class="card-body">
+                @if($user->rank)
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card bg-light-warning border-0 h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="rank-icon bg-warning rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <i class="bi bi-award text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0 text-warning">{{ $user->rank->name }}</h5>
+                                        <small class="text-muted">Current Rank</small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Level</small>
+                                        <strong>{{ $user->rank->level }}</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Required PV</small>
+                                        <strong>{{ number_format($user->rank->required_pv, 1) }} PV</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <td><small class="text-muted">Cash Reward</small></td>
+                                        <td><strong class="text-success">₦{{ number_format($user->rank->cash_reward, 2) }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><small class="text-muted">Other Rewards</small></td>
+                                        <td><strong>{{ $user->rank->other_reward ?? 'N/A' }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><small class="text-muted">Status</small></td>
+                                        <td>
+                                            <span class="badge {{ $user->rank->is_active ? 'bg-success' : 'bg-danger' }}">
+                                                {{ $user->rank->is_active ? 'Active' : 'Inactive' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        @if($user->rank->description)
+                        <div class="mt-3">
+                            <small class="text-muted">Description:</small>
+                            <p class="mb-0 small">{{ $user->rank->description }}</p>
+                        </div>
+                        @endif
+                        
+                        <!-- Next Rank Progress -->
+                        @if($nextRank)
+                        <div class="mt-4">
+                            <h6 class="text-muted mb-2">Next Rank: {{ $nextRank->name }}</h6>
+                            <div class="progress" style="height: 8px;">
+                                @php
+                                    $progress = ($user->total_pv / $nextRank->required_pv) * 100;
+                                    $progress = min($progress, 100);
+                                @endphp
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ $progress }}%" 
+                                     aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted mt-2 d-block">
+                                {{ number_format($user->total_pv, 1) }} PV / {{ number_format($nextRank->required_pv, 1) }} PV needed
+                            </small>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @else
+                <div class="text-center py-5">
+                    <i class="bi bi-award text-light-gray fs-1 mb-2"></i>
+                    <p class="text-muted mb-0">No rank achieved yet</p>
+                    <small class="text-muted">Start building your network to achieve ranks</small>
+                    
+                    <!-- Show first rank as target if no rank achieved -->
+                    @if($nextRank)
+                    <div class="mt-4">
+                        <h6 class="text-muted mb-2">First Rank Target: {{ $nextRank->name }}</h6>
+                        <div class="progress" style="height: 8px;">
+                            @php
+                                $progress = ($user->total_pv / $nextRank->required_pv) * 100;
+                                $progress = min($progress, 100);
+                            @endphp
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ $progress }}%" 
+                                 aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <small class="text-muted mt-2 d-block">
+                            {{ number_format($user->total_pv, 1) }} PV / {{ number_format($nextRank->required_pv, 1) }} PV needed
+                        </small>
+                    </div>
+                    @endif
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .bg-light-red { background-color: rgba(230, 51, 35, 0.08) !important; }
     .bg-light-teal { background-color: rgba(31, 163, 196, 0.08) !important; }
     .bg-light-purple { background-color: rgba(106, 90, 205, 0.08) !important; }
+    .bg-light-warning { background-color: rgba(255, 193, 7, 0.08) !important; }
     .text-purple { color: #6a5acd !important; }
+    .bg-purple { background-color: #6a5acd !important; }
+    .bg-teal { background-color: #20c997 !important; }
+    .bg-pink { background-color: #e83e8c !important; }
     
     .action-card {
         transition: transform 0.3s;
@@ -406,6 +665,10 @@
         box-shadow: 0 4px 15px rgba(230, 51, 35, 0.2);
     }
     
+    .rank-icon {
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);
+    }
+    
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .stat-card .card-body {
@@ -417,4 +680,30 @@
         }
     }
 </style>
+
+<script>
+    function copyReferralCode() {
+        const referralCode = document.getElementById('referralCode');
+        referralCode.select();
+        referralCode.setSelectionRange(0, 99999);
+        
+        navigator.clipboard.writeText(referralCode.value).then(() => {
+            // Show success message
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+            button.classList.remove('btn-red');
+            button.classList.add('btn-success');
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-red');
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            alert('Failed to copy referral code. Please try again.');
+        });
+    }
+</script>
 @endsection

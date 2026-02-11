@@ -13,6 +13,22 @@ use App\Http\Controllers\Auth\VerifyController;
 use App\Http\Controllers\Auth\PaymentController;
 use App\Http\Controllers\DashboardController;
 
+// MEMBER CONTROLLERS
+use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
+use App\Http\Controllers\Member\ProfileController;
+use App\Http\Controllers\Member\GenealogyController;
+use App\Http\Controllers\Member\WalletController;
+use App\Http\Controllers\Member\ShoppingController;
+use App\Http\Controllers\Member\VTUController;
+use App\Http\Controllers\Member\ReferralController;
+use App\Http\Controllers\Member\CommissionController;
+use App\Http\Controllers\Member\RankController;
+use App\Http\Controllers\Member\WithdrawController;
+use App\Http\Controllers\Member\SettingController;
+use App\Http\Controllers\Member\OrderController;
+use App\Http\Controllers\Member\ClaimProductController;
+use App\Http\Controllers\Member\KycController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -69,47 +85,58 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::prefix('member')->name('member.')->middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard
-    Route::get('/dashboard', [\App\Http\Controllers\Member\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [MemberDashboardController::class, 'index'])->name('dashboard');
 
-    // Profile
-    Route::get('/profile', [\App\Http\Controllers\Member\ProfileController::class, 'index'])->name('profile');
-    Route::put('/profile', [\App\Http\Controllers\Member\ProfileController::class, 'update'])->name('profile.update');
+    // ========= PROFILE =========
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [ProfileController::class, 'index'])->name('index');
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
+        Route::put('/', [ProfileController::class, 'update'])->name('update');
+    });
 
     // Genealogy
-    Route::get('/genealogy', [\App\Http\Controllers\Member\GenealogyController::class, 'index'])->name('genealogy');
+    Route::get('/genealogy', [GenealogyController::class, 'index'])->name('genealogy');
 
     // Wallet
-    Route::get('/wallet', [\App\Http\Controllers\Member\WalletController::class, 'index'])->name('wallet');
+    Route::get('/wallet', [WalletController::class, 'index'])->name('wallet');
 
     // Shopping
-    Route::get('/shopping', [\App\Http\Controllers\Member\ShoppingController::class, 'index'])->name('shopping');
+    Route::get('/shopping', [ShoppingController::class, 'index'])->name('shopping');
 
     // VTU Services
-    Route::get('/vtu', [\App\Http\Controllers\Member\VTUController::class, 'index'])->name('vtu');
+    Route::get('/vtu', [VTUController::class, 'index'])->name('vtu');
 
     // Referrals
-    Route::get('/referrals', [\App\Http\Controllers\Member\ReferralController::class, 'index'])->name('referrals');
+    Route::get('/referrals', [ReferralController::class, 'index'])->name('referrals');
 
     // Commissions
-    Route::get('/commissions', [\App\Http\Controllers\Member\CommissionController::class, 'index'])->name('commissions');
+    Route::get('/commissions', [CommissionController::class, 'index'])->name('commissions');
 
     // Ranks
-    Route::get('/ranks', [\App\Http\Controllers\Member\RankController::class, 'index'])->name('ranks');
+    Route::get('/ranks', [RankController::class, 'index'])->name('ranks');
 
     // Withdraw
-    Route::get('/withdraw', [\App\Http\Controllers\Member\WithdrawController::class, 'index'])->name('withdraw');
-    Route::post('/withdraw', [\App\Http\Controllers\Member\WithdrawController::class, 'store'])->name('withdraw.store');
+    Route::get('/withdraw', [WithdrawController::class, 'index'])->name('withdraw');
+    Route::post('/withdraw', [WithdrawController::class, 'store'])->name('withdraw.store');
 
     // Settings
-    Route::get('/settings', [\App\Http\Controllers\Member\SettingController::class, 'index'])->name('settings');
-    Route::put('/settings', [\App\Http\Controllers\Member\SettingController::class, 'update'])->name('settings.update');
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings');
+    Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
 
     // Orders
-    Route::get('/orders', [\App\Http\Controllers\Member\OrderController::class, 'index'])->name('orders');
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders');
 
     // Claim Product
-    Route::get('/claim-product', [\App\Http\Controllers\Member\ClaimProductController::class, 'index'])->name('claim-product');
-    Route::post('/claim-product', [\App\Http\Controllers\Member\ClaimProductController::class, 'store'])->name('claim-product.store');
+    Route::get('/claim-product', [ClaimProductController::class, 'index'])->name('claim-product');
+    Route::post('/claim-product', [ClaimProductController::class, 'store'])->name('claim-product.store');
+
+    // ========= KYC VERIFICATION =========
+    Route::prefix('kyc')->name('kyc.')->group(function () {
+        Route::get('/', [KycController::class, 'index'])->name('index');
+        Route::post('/', [KycController::class, 'store'])->name('store');
+        Route::put('/{kyc}', [KycController::class, 'update'])->name('update');
+        Route::get('/document/{filename}', [KycController::class, 'viewDocument'])->name('document');
+    });
 });
 
 // Redirect `/dashboard` to `member.dashboard`

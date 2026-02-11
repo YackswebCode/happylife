@@ -150,4 +150,21 @@ class User extends Authenticatable
                $this->payment_status === 'paid' && 
                $this->status === 'active';
     }
+
+    /**
+ * Get the KYC record associated with the user.
+ * Typically one-to-one, but we may keep multiple submissions; use latest.
+ */
+public function kyc()
+{
+    return $this->hasOne(Kyc::class)->latestOfMany();
+}
+
+/**
+ * Get all KYC submissions for the user.
+ */
+public function kycs()
+{
+    return $this->hasMany(Kyc::class);
+}
 }

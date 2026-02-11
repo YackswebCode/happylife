@@ -477,7 +477,7 @@
                         </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('member.profile*') ? 'active' : '' }}">
-                        <a href="{{ route('member.profile') }}" class="nav-link">
+                        <a href="{{ route('member.profile.index') }}" class="nav-link">
                             <i class="bi bi-person-circle"></i> Profile
                         </a>
                     </li>
@@ -603,7 +603,7 @@
                             <i class="bi bi-chevron-down ms-1"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow">
-                            <li><a class="dropdown-item" href="{{ route('member.profile') }}"><i class="bi bi-person me-2"></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ route('member.profile.index') }}"><i class="bi bi-person me-2"></i> Profile</a></li>
                             <li><a class="dropdown-item" href="{{ route('member.settings') }}"><i class="bi bi-gear me-2"></i> Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>

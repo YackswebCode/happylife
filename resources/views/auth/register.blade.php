@@ -11,8 +11,8 @@
                 <!-- Card Header -->
                 <div class="card-header bg-gradient text-white p-5 border-0" style="background: linear-gradient(135deg, #1FA3C4 0%, #3DB7D6 100%);">
                     <div class="text-center">
-                        <h2 class="h1 fw-bold mb-3">Join Happylife Family</h2>
-                        <p class="mb-0 opacity-75">Start your journey to financial freedom today</p>
+                        <h2 class="h1 fw-bold mb-3 text-danger">Join Happylife Family</h2>
+                        <p class="mb-0 opacity-75 text-danger">Start your journey to financial freedom today</p>
                     </div>
                 </div>
                 

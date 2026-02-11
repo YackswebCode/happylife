@@ -9,47 +9,71 @@ class Kyc extends Model
 {
     use HasFactory;
 
+    protected $table = 'kyc';
+
     protected $fillable = [
         'user_id',
         'document_type',
-        'document_number',
-        'document_front',
-        'document_back',
+        'front_image',
+        'back_image',
         'selfie_image',
+        'id_number',
+        'issue_date',
+        'expiry_date',
+        'place_of_issue',
         'status',
+        'admin_comment',
+        'submitted_at',
         'verified_at',
         'verified_by',
-        'rejection_reason'
     ];
 
-    const DOCUMENT_NIN = 'nin';
-    const DOCUMENT_DRIVERS_LICENSE = 'drivers_license';
-    const DOCUMENT_PASSPORT = 'passport';
-    const DOCUMENT_VOTERS_CARD = 'voters_card';
+    protected $casts = [
+        'issue_date'   => 'date',
+        'expiry_date'  => 'date',
+        'submitted_at' => 'datetime',
+        'verified_at'  => 'datetime',
+        'created_at'   => 'datetime',
+        'updated_at'   => 'datetime',
+    ];
 
-    const STATUS_PENDING = 'pending';
-    const STATUS_VERIFIED = 'verified';
-    const STATUS_REJECTED = 'rejected';
-
-    // Relationships
+    /**
+     * Relationship: KYC belongs to a User
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function verifier()
+    /**
+     * Relationship: KYC verified by Admin
+     */
+    public function verifiedBy()
     {
         return $this->belongsTo(User::class, 'verified_by');
     }
 
-    // Accessor for document type name
-    public function getDocumentTypeNameAttribute()
+    /**
+     * Scope for pending KYC
+     */
+    public function scopePending($query)
     {
-        return [
-            self::DOCUMENT_NIN => 'National ID',
-            self::DOCUMENT_DRIVERS_LICENSE => "Driver's License",
-            self::DOCUMENT_PASSPORT => 'International Passport',
-            self::DOCUMENT_VOTERS_CARD => "Voter's Card"
-        ][$this->document_type] ?? 'Unknown';
+        return $query->where('status', 'pending');
+    }
+
+    /**
+     * Scope for approved KYC
+     */
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
+    /**
+     * Scope for rejected KYC
+     */
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'rejected');
     }
 }
