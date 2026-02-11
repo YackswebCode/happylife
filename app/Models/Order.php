@@ -1,4 +1,5 @@
 <?php
+// app/Models/Order.php
 
 namespace App\Models;
 
@@ -11,49 +12,29 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
-        'product_id',
-        'quantity',
-        'total_amount',
-        'pv_value',
+        'order_number',
+        'subtotal',
+        'total',
+        'pv_total',
         'status',
-        'payment_method',
         'payment_status',
-        'shipping_address',
-        'tracking_number',
-        'order_date'
+        'payment_method',
+        'items',
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
-        'total_amount' => 'float',
-        'pv_value' => 'integer',
-        'order_date' => 'datetime'
+        'subtotal' => 'float',
+        'total'    => 'float',
+        'pv_total' => 'integer',
+        'items'    => 'array',
     ];
 
-    const STATUS_PENDING = 'pending';
-    const STATUS_PROCESSING = 'processing';
-    const STATUS_SHIPPED = 'shipped';
-    const STATUS_DELIVERED = 'delivered';
-    const STATUS_CANCELLED = 'cancelled';
-
-    const PAYMENT_PENDING = 'pending';
-    const PAYMENT_PAID = 'paid';
-    const PAYMENT_FAILED = 'failed';
-
-    // Relationships
+    /**
+     * Get the user that owns the order.
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function product()
-    {
-        return $this->belongsTo(RepurchaseProduct::class, 'product_id');
-    }
-
-    // Accessor for formatted total amount
-    public function getFormattedTotalAttribute()
-    {
-        return '₦' . number_format($this->total_amount, 2);
-    }
 }

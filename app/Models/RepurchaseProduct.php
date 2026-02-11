@@ -1,4 +1,5 @@
 <?php
+// app/Models/RepurchaseProduct.php
 
 namespace App\Models;
 
@@ -9,43 +10,44 @@ class RepurchaseProduct extends Model
 {
     use HasFactory;
 
+    protected $table = 'repurchase_products';
+
     protected $fillable = [
+        'category_id',
         'name',
-        'category',
+        'slug',
+        'description',
         'price',
+        'old_price',
         'pv_value',
         'stock',
         'image',
-        'description',
+        'gallery',
         'is_active',
-        'sku'
     ];
 
     protected $casts = [
-        'price' => 'float',
-        'pv_value' => 'integer',
-        'stock' => 'integer',
-        'is_active' => 'boolean'
+        'price'      => 'float',
+        'old_price'  => 'float',
+        'pv_value'   => 'integer',
+        'stock'      => 'integer',
+        'gallery'    => 'array',
+        'is_active'  => 'boolean',
     ];
 
-    // Relationships
-    public function orders()
+    /**
+     * Get the category that owns the product.
+     */
+    public function category()
     {
-        return $this->hasMany(Order::class);
+        return $this->belongsTo(ProductCategory::class, 'category_id');
     }
 
-    // Accessor for image URL
-    public function getImageUrlAttribute()
+    /**
+     * Scope a query to only include active products.
+     */
+    public function scopeActive($query)
     {
-        if ($this->image) {
-            return asset('storage/' . $this->image);
-        }
-        return asset('images/default-product.jpg');
-    }
-
-    // Check if product is in stock
-    public function getInStockAttribute()
-    {
-        return $this->stock > 0;
+        return $query->where('is_active', true);
     }
 }

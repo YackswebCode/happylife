@@ -1,4 +1,5 @@
 <?php
+// app/Models/Upgrade.php
 
 namespace App\Models;
 
@@ -13,26 +14,16 @@ class Upgrade extends Model
         'user_id',
         'old_package_id',
         'new_package_id',
-        'upgrade_amount',
-        'status',
+        'difference_amount',
         'payment_method',
-        'payment_status',
-        'upgrade_date',
-        'bonus_paid'
+        'status',
+        'reference',
     ];
 
     protected $casts = [
-        'upgrade_amount' => 'float',
-        'bonus_paid' => 'boolean',
-        'upgrade_date' => 'datetime'
+        'difference_amount' => 'float',
     ];
 
-    const STATUS_PENDING = 'pending';
-    const STATUS_APPROVED = 'approved';
-    const STATUS_COMPLETED = 'completed';
-    const STATUS_CANCELLED = 'cancelled';
-
-    // Relationships
     public function user()
     {
         return $this->belongsTo(User::class);

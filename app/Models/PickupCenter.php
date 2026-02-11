@@ -33,4 +33,13 @@ class PickupCenter extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    // app/Models/PickupCenter.php
+
+public function claims()
+{
+    return $this->hasMany(ProductClaim::class);
+}
+
+
 }

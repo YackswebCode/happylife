@@ -12,7 +12,7 @@
                 <p class="text-muted mb-0">View your account details and activity.</p>
             </div>
             <div>
-                <a href="{{ route('member.profile.edit') }}" class="btn btn-red">
+                <a href="{{ route('member.profile.edit') }}" class="btn btn-red me-2">
                     <i class="bi bi-pencil-square me-1"></i> Edit Profile
                 </a>
 

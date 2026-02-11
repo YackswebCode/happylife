@@ -480,32 +480,26 @@
                             <i class="bi bi-diagram-3-fill"></i> Genealogy
                         </a>
                     </li>
-                    <!-- FIXED: changed from member.wallet to member.wallet.index -->
                     <li class="nav-item {{ request()->routeIs('member.wallet*') ? 'active' : '' }}">
                         <a href="{{ route('member.wallet.index') }}" class="nav-link">
                             <i class="bi bi-wallet2"></i> Wallets
                         </a>
                     </li>
+                    
+                    <!-- SHOPPING MALL – FIXED ROUTE NAME -->
                     <li class="nav-item {{ request()->routeIs('member.shopping*') ? 'active' : '' }}">
-                        <a href="{{ route('member.shopping') }}" class="nav-link">
+                        <a href="{{ route('member.shopping.index') }}" class="nav-link">
                             <i class="bi bi-cart-fill"></i> Shopping Mall
                         </a>
                     </li>
+                    
+                    <!-- VTU SERVICES – FIXED ROUTE NAME -->
                     <li class="nav-item {{ request()->routeIs('member.vtu*') ? 'active' : '' }}">
-                        <a href="{{ route('member.vtu') }}" class="nav-link">
+                        <a href="{{ route('member.vtu.index') }}" class="nav-link">
                             <i class="bi bi-phone-fill"></i> VTU Services
                         </a>
                     </li>
-                    <li class="nav-item {{ request()->routeIs('member.referrals*') ? 'active' : '' }}">
-                        <a href="{{ route('member.referrals') }}" class="nav-link">
-                            <i class="bi bi-people-fill"></i> Referrals
-                        </a>
-                    </li>
-                    <li class="nav-item {{ request()->routeIs('member.commissions*') ? 'active' : '' }}">
-                        <a href="{{ route('member.commissions') }}" class="nav-link">
-                            <i class="bi bi-cash-stack"></i> Commissions
-                        </a>
-                    </li>
+                  
                     <li class="nav-item {{ request()->routeIs('member.ranks*') ? 'active' : '' }}">
                         <a href="{{ route('member.ranks.index') }}" class="nav-link">
                             <i class="bi bi-trophy-fill"></i> Ranks
@@ -516,16 +510,15 @@
                             <i class="bi bi-bank"></i> Withdraw
                         </a>
                     </li>
-                    <li class="nav-item {{ request()->routeIs('member.settings*') ? 'active' : '' }}">
-                        <a href="{{ route('member.settings.index') }}" class="nav-link">
-                            <i class="bi bi-gear-fill"></i> Settings
-                        </a>
-                    </li>
+                   
+                    
+                    <!-- ORDERS – FIXED ROUTE NAME -->
                     <li class="nav-item {{ request()->routeIs('member.orders*') ? 'active' : '' }}">
-                        <a href="{{ route('member.orders') }}" class="nav-link">
+                        <a href="{{ route('member.orders.index') }}" class="nav-link">
                             <i class="bi bi-box-seam"></i> Orders
                         </a>
                     </li>
+                    
                     <li class="nav-item {{ request()->routeIs('member.claim-product*') ? 'active' : '' }}">
                         <a href="{{ route('member.claim-product.index') }}" class="nav-link">
                             <i class="bi bi-gift-fill"></i> Claim Product
@@ -534,6 +527,11 @@
                     <li class="nav-item {{ request()->routeIs('member.kyc*') ? 'active' : '' }}">
                         <a href="{{ route('member.kyc.index') }}" class="nav-link">
                             <i class="bi bi-shield-check"></i> KYC Verification
+                        </a>
+                    </li>
+                    <li class="nav-item {{ request()->routeIs('member.upgrade*') ? 'active' : '' }}">
+                        <a href="{{ route('member.upgrade.index') }}" class="nav-link">
+                            <i class="bi bi-arrow-up-circle-fill"></i> Upgrade Package
                         </a>
                     </li>
                     <!-- Additional menu items for testing scroll -->

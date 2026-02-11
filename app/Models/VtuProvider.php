@@ -9,31 +9,10 @@ class VtuProvider extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'code',
-        'service_type',
-        'logo',
-        'api_endpoint',
-        'api_key',
-        'api_secret',
-        'status',
-        'commission_rate'
-    ];
+    protected $fillable = ['name', 'category', 'code', 'is_active', 'logo'];
 
-    protected $casts = [
-        'commission_rate' => 'float',
-        'status' => 'boolean'
-    ];
-
-    // Relationships
     public function plans()
     {
-        return $this->hasMany(VtuPlan::class);
-    }
-
-    public function transactions()
-    {
-        return $this->hasMany(VtuTransaction::class);
+        return $this->hasMany(VtuPlan::class, 'provider_id');
     }
 }

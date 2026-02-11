@@ -214,4 +214,50 @@ public function wallets()
 {
     return $this->hasMany(Wallet::class);
 }
+
+// app/Models/User.php
+
+public function orders()
+{
+    return $this->hasMany(Order::class);
+}
+
+
+public function productClaims()
+{
+    return $this->hasMany(ProductClaim::class);
+}
+
+public function hasPendingClaim()
+{
+    return $this->productClaims()->where('status', 'pending')->exists();
+}
+
+public function hasApprovedClaim()
+{
+    return $this->productClaims()->where('status', 'approved')->exists();
+}
+
+public function hasCollectedClaim()
+{
+    return $this->productClaims()->where('status', 'collected')->exists();
+}
+
+
+
+public function upgrades()
+{
+    return $this->hasMany(Upgrade::class);
+}
+
+public function getUpgradeablePackagesAttribute()
+{
+    if (!$this->package) {
+        return collect();
+    }
+    return Package::where('order', '>', $this->package->order)
+        ->where('is_active', true)
+        ->orderBy('order')
+        ->get();
+}
 }

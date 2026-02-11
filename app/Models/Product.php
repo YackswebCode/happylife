@@ -15,4 +15,10 @@ class Product extends Model
     {
         return $this->belongsTo(Package::class);
     }
+    // app/Models/Product.php
+
+public function claims()
+{
+    return $this->hasMany(ProductClaim::class);
+}
 }

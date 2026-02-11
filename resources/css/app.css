@@ -5,3 +5,51 @@
 body {
     font-family: Arial, sans-serif;
 }
+/* Add to your main CSS file (e.g., resources/css/member.css) */
+:root {
+    --happylife-red: #E63323;
+    --happylife-teal: #1FA3C4;
+    --happylife-dark: #333333;
+    --happylife-light: #E6E6E6;
+    --happylife-cyan: #3DB7D6;
+}
+
+.bg-happylife-red { background-color: var(--happylife-red); }
+.bg-happylife-teal { background-color: var(--happylife-teal); }
+.bg-happylife-dark { background-color: var(--happylife-dark); }
+.bg-happylife-light { background-color: var(--happylife-light); }
+.bg-happylife-cyan { background-color: var(--happylife-cyan); }
+
+.text-happylife-red { color: var(--happylife-red); }
+.text-happylife-teal { color: var(--happylife-teal); }
+.text-happylife-dark { color: var(--happylife-dark); }
+
+.btn-happylife-red {
+    background-color: var(--happylife-red);
+    color: white;
+    border: none;
+}
+.btn-happylife-red:hover {
+    background-color: #c42c1f;
+    color: white;
+}
+.btn-happylife-teal {
+    background-color: var(--happylife-teal);
+    color: white;
+    border: none;
+}
+.btn-happylife-teal:hover {
+    background-color: #178aa8;
+    color: white;
+}
+
+.product-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+}
