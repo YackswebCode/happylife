@@ -1,59 +1,294 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Happylife Multipurpose Int’l Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Hybrid MLM • E-Commerce • Rewards • VTU Services Web Application**
 
-## About Laravel
+Happylife Multipurpose Int’l is a full–scale multi-module web platform that combines **Binary MLM**, **Product E-Commerce**, **Rank & Reward Systems**, **Multi-Wallet Finance**, and **VTU Utility Services** into a single scalable Laravel ecosystem.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+This repository contains the complete backend, frontend views, services, and console automation logic required to run the platform.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+ 🚀 Core Features
 
-## Learning Laravel
+ Membership & Referral System
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+* Package based registration
+* Binary genealogy tree structure
+* Sponsor & Downline placement logic
+* Upgrade system
+* Automated commission processing
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+ Compensation & Rewards
 
-## Laravel Sponsors
+* Direct Sponsor Bonuses
+* Binary Pairing Bonuses
+* Upgrade Bonuses
+* Indirect Sponsor Bonuses
+* Shopping Bonuses
+* Rank Achievement Rewards
+* Cash, Trips, Assets & Recognition incentives
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+ E-Commerce / Repurchase Mall
 
-### Premium Partners
+* Product purchase using wallet earnings
+* Category based browsing
+* Stock & PV management
+* Separate landing and repurchase product systems
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+ Multi-Wallet Finance System
 
-## Contributing
+* Commission Wallet
+* Registration Wallet
+* Rank Award Wallet
+* Shopping Bonus Wallet
+* Secure withdrawals with admin charges
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+ VTU Services
 
-## Code of Conduct
+* Airtime purchase
+* Data subscriptions
+* Cable TV payments
+* Electricity bills
+* Utility transactions via providers & plans
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+ Admin Control Panel
 
-## Security Vulnerabilities
+* User & KYC management
+* Wallet adjustments
+* Commission monitoring
+* Product management
+* Rank & package configuration
+* VTU providers & plans
+* Reports & analytics
+* CMS & settings
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+ 🛠 Technology Stack
+
+ Backend
+
+* **Framework:** Laravel 12
+* **Language:** PHP 8.2+
+* **Database:** MySQL 
+* **Authentication:** Laravel Sanctum
+* **Queues:** Redis
+* **ORM:** Eloquent
+
+ Frontend
+
+* **Templating:** Blade
+* **UI:** Tailwind CSS
+* **JavaScript:** Alpine.js + Vanilla JS
+* **Responsive Design:** Mobile-First
+
+ Infrastructure / DevOps
+
+* Apache
+* Supervisor
+* Laravel Horizon
+* SSL (HTTPS)
+* Sentry Monitoring
+* Local 
+
+
+ 🧠 System Architecture
+
+```
+UI Layer        → Blade + Tailwind + Alpine
+Controller      → Laravel Controllers
+Service Layer   → Commission, Wallet, Rank, VTU, Genealogy
+Data Layer      → MySQL / SQLite
+Queue Layer     → Redis + Horizon
+Automation      → Artisan Console Commands
+```
+
+
+ 📦 Membership Packages (Sample)
+
+| Package       | Price    | PV     | Entitlement            |
+| ------------- | -------- | ------ | ---------------------- |
+| Sapphire      | ₦6,500   | 8 PV   | Product Worth ₦6,500   |
+| Ohekem        | ₦10,500  | 12 PV  | Product Worth ₦10,500  |
+| Lifestyle     | ₦54,500  | 82 PV  | Product Worth ₦54,500  |
+| Business Guru | ₦272,500 | 450 PV | Product Worth ₦272,500 |
+
+**Rules**
+
+* Product equals package value
+* PV rolls forward daily
+* No PV from upgrades
+* Landing page must not display registration price
+
+
+ 💰 Wallet Types
+
+1. **Commission Wallet** – Bonuses, VTU, Withdrawals
+2. **Registration Wallet** – Sponsor pays for downlines
+3. **Rank Wallet** – Rank reward storage
+4. **Shopping Wallet** – Repurchase bonuses
+
+
+ 🔐 Security
+
+* CSRF Protection
+* Password Hashing
+* Encrypted KYC
+* Role-Based Access Control
+* HTTPS Enforcement
+* Rate Limiting
+* Webhook Signature Validation
+* 2FA (Future Enhancement)
+
+
+ ⚙ Console Automation Commands
+
+Located in `app/Console/Commands`:
+
+| Command                 | Purpose                        |
+| ----------------------- | ------------------------------ |
+| `CalculateDailyPairs`   | Binary PV pairing calculations |
+| `ProcessCommissions`    | Distributes bonuses            |
+| `CheckRankAchievements` | Evaluates rank promotions      |
+
+These can be scheduled via Laravel Scheduler / Cron.
+
+
+ 📂 Project Structure Highlights
+
+app/
+ ├── Http/Controllers
+ │   ├── Admin/
+ │   ├── Member/
+ │   └── Auth/
+ ├── Services/
+ │   ├── CommissionService
+ │   ├── WalletService
+ │   ├── RankService
+ │   ├── VTUService
+ │   └── GenealogyService
+ ├── Models/
+ ├── Console/Commands/
+ └── Traits/
+
+resources/views/
+ ├── admin/
+ ├── member/
+ ├── landing/
+ └── components/
+
+routes/
+ ├── web.php
+ ├── admin.php
+ ├── member.php
+ └── api.php
+```
+
+
+ 🗄 Core Database Tables
+
+* users
+* packages
+* wallets
+* wallet_transactions
+* commissions
+* ranks
+* rank_rewards
+* landing_products
+* repurchase_products
+* orders
+* upgrades
+* kyc
+* vtu_transactions
+* vtu_providers
+* vtu_plans
+* countries
+* states
+* pickup_centers
+
+
+ 🧩 Member Modules
+
+* Dashboard
+* Genealogy Tree
+* Wallets & Withdrawals
+* Repurchase Mall
+* Rank Status
+* Orders
+* KYC
+* VTU Services
+* Profile & Settings
+
+
+ 🧑‍💼 Admin Modules
+
+* Dashboard Analytics
+* User Management
+* Product Management
+* Wallet Adjustments
+* Commission Logs
+* Rank & Package Setup
+* VTU Configuration
+* Reports & Exports
+* CMS & General Settings
+
+
+ 🧪 Development Setup
+
+```bash
+git clone https://github.com/YackswebCode/happylife.git
+cd happylife
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+npm run build
+php artisan serve
+```
+
+Optional Queue / Horizon:
+
+```bash
+php artisan queue:work
+php artisan horizon
+```
+
+
+ 🔄 CI / Deployment Flow
+
+1. Push Code
+2. Run Tests
+3. Build Assets
+4. Deploy
+5. Run Migrations
+6. Restart Queue Workers
+
+
+ 📊 Monitoring & Backups
+
+* Daily database backups
+* Horizon queue monitoring
+* Error tracking (Sentry)
+* Server health checks
+
+
+
+ 🎨 UI Color Palette
+
+| Color      | Hex     |
+| ---------- | ------- |
+| Red        | E63323 |
+| Teal Blue  | 1FA3C4 |
+| Dark Gray  | 333333 |
+| Light Gray | E6E6E6 |
+| Soft Cyan  | 3DB7D6 |
+
+
+
+ 📄 License
+
+This project is proprietary software owned by **Happylife Multipurpose Int’l**.
+Unauthorized redistribution or resale is prohibited.
+
+
+This README makes the repo look like a **serious production SaaS platform**, not just an MLM script.
