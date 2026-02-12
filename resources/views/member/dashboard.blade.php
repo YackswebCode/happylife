@@ -39,9 +39,9 @@
                             <div class="input-group">
                                 <input type="text" class="form-control border-end-0 bg-light" id="referralCode" 
                                        value="{{ $user->referral_code ?? 'N/A' }}" readonly>
-                                <button class="btn btn-red" type="button" onclick="copyReferralCode()">
-                                    <i class="bi bi-clipboard"></i> Copy
-                                </button>
+                               <button class="btn btn-red" type="button" onclick="copyReferralCode(this)">
+                                <i class="bi bi-clipboard"></i> Copy
+                            </button>
                             </div>
                         </div>
                     </div>
@@ -83,9 +83,11 @@
                         <h6 class="stat-label mb-2">COMMISSION BALANCE</h6>
                         <h3 class="stat-value mb-0 text-teal-blue">₦{{ number_format($stats['commission_balance'], 2) }}</h3>
                         <div class="mt-2">
-                            <button class="btn btn-sm btn-red" onclick="alert('Withdraw feature coming soon!')">
+                           <a href="{{ route('member.withdraw.index') }}">
+                             <button class="btn btn-sm btn-red">
                                 <i class="bi bi-cash-coin me-1"></i> Withdraw
                             </button>
+                           </a>
                         </div>
                     </div>
                     <div class="stat-icon text-teal-blue opacity-75">
@@ -149,55 +151,46 @@
                 <h5 class="mb-0 text-white"><i class="bi bi-lightning-fill me-2"></i>Quick Actions</h5>
             </div>
             <div class="card-body p-4">
-                <div class="row g-3">
-                    <div class="col-lg-3 col-md-6">
-                        <a href="#" class="card action-card border-0 text-decoration-none" onclick="alert('Coming soon!')">
-                            <div class="card-body text-center p-4">
-                                <div class="icon-wrapper bg-gradient-teal rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                    <i class="bi bi-diagram-3-fill fs-4 text-white"></i>
-                                </div>
-                                <h6 class="mb-2 text-dark-gray">Genealogy Tree</h6>
-                                <small class="text-muted">View your network structure</small>
-                            </div>
-                        </a>
-                    </div>
-                    
-                    <div class="col-lg-3 col-md-6">
-                        <a href="#" class="card action-card border-0 text-decoration-none" onclick="alert('Coming soon!')">
-                            <div class="card-body text-center p-4">
-                                <div class="icon-wrapper bg-gradient-red rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                    <i class="bi bi-cart-fill fs-4 text-white"></i>
-                                </div>
-                                <h6 class="mb-2 text-dark-gray">Shopping Mall</h6>
-                                <small class="text-muted">Shop products & repurchase</small>
-                            </div>
-                        </a>
-                    </div>
-                    
-                    <div class="col-lg-3 col-md-6">
-                        <a href="#" class="card action-card border-0 text-decoration-none" onclick="alert('Coming soon!')">
-                            <div class="card-body text-center p-4">
-                                <div class="icon-wrapper bg-teal-blue rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                    <i class="bi bi-phone-fill fs-4 text-white"></i>
-                                </div>
-                                <h6 class="mb-2 text-dark-gray">VTU Services</h6>
-                                <small class="text-muted">Buy airtime, data, bills</small>
-                            </div>
-                        </a>
-                    </div>
-                    
-                    <div class="col-lg-3 col-md-6">
-                        <a href="#" class="card action-card border-0 text-decoration-none" onclick="alert('Coming soon!')">
-                            <div class="card-body text-center p-4">
-                                <div class="icon-wrapper bg-soft-cyan rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                    <i class="bi bi-person-plus-fill fs-4 text-white"></i>
-                                </div>
-                                <h6 class="mb-2 text-dark-gray">Refer Someone</h6>
-                                <small class="text-muted">Grow your network</small>
-                            </div>
-                        </a>
-                    </div>
+          <div class="row g-3">
+    <!-- Genealogy Tree -->
+    <div class="col-lg-4 col-md-6">
+        <a href="{{ route('member.genealogy.index') }}" class="card action-card border-0 text-decoration-none">
+            <div class="card-body text-center p-4">
+                   <div class="icon-wrapper bg-soft-cyan rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="bi bi-diagram-3-fill fs-4 text-white"></i>
                 </div>
+                <h6 class="mb-2 text-dark-gray">Genealogy Tree</h6>
+                <small class="text-muted">View your network structure</small>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Shopping Mall -->
+    <div class="col-lg-4 col-md-6">
+        <a href="{{ route('member.shopping.index') }}" class="card action-card border-0 text-decoration-none">
+            <div class="card-body text-center p-4">
+                <div class="icon-wrapper bg-gradient-red rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="bi bi-cart-fill fs-4 text-white"></i>
+                </div>
+                <h6 class="mb-2 text-dark-gray">Shopping Mall</h6>
+                <small class="text-muted">Shop products & repurchase</small>
+            </div>
+        </a>
+    </div>
+    
+    <!-- VTU Services -->
+    <div class="col-lg-4 col-md-6">
+        <a href="{{ route('member.vtu.index') }}" class="card action-card border-0 text-decoration-none">
+            <div class="card-body text-center p-4">
+                <div class="icon-wrapper bg-teal-blue rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="bi bi-phone-fill fs-4 text-white"></i>
+                </div>
+                <h6 class="mb-2 text-dark-gray">VTU Services</h6>
+                <small class="text-muted">Buy airtime, data, bills</small>
+            </div>
+        </a>
+    </div>
+</div>
             </div>
         </div>
     </div>
@@ -682,23 +675,25 @@
 </style>
 
 <script>
-    function copyReferralCode() {
+    function copyReferralCode(button) {
         const referralCode = document.getElementById('referralCode');
         referralCode.select();
         referralCode.setSelectionRange(0, 99999);
         
         navigator.clipboard.writeText(referralCode.value).then(() => {
-            // Show success message
-            const button = event.target;
-            const originalText = button.innerHTML;
+            // Save original content and styles
+            const originalHTML = button.innerHTML;
+            const originalClass = button.className;
+            
+            // Change button appearance
             button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
             button.classList.remove('btn-red');
             button.classList.add('btn-success');
             
+            // Restore after 2 seconds
             setTimeout(() => {
-                button.innerHTML = originalText;
-                button.classList.remove('btn-success');
-                button.classList.add('btn-red');
+                button.innerHTML = originalHTML;
+                button.className = originalClass; // restores all classes
             }, 2000);
         }).catch(err => {
             console.error('Failed to copy: ', err);

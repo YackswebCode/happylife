@@ -4,6 +4,7 @@
 
 @section('content')
 <div class="container-fluid px-4">
+
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -15,20 +16,32 @@
         </a>
     </div>
 
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
     <!-- Wallet Cards Grid -->
     <div class="row g-4 mb-5">
         @php
             $walletTypes = [
                 'commission'   => ['name' => 'Commission', 'icon' => 'bi-cash-stack', 'color' => 'bg-teal-blue'],
                 'registration' => ['name' => 'Registration', 'icon' => 'bi-person-plus', 'color' => 'bg-soft-cyan'],
-                'rank'         => ['name' => 'Rank Award',   'icon' => 'bi-trophy',    'color' => 'bg-red'],
                 'shopping'     => ['name' => 'Shopping',     'icon' => 'bi-cart',      'color' => 'bg-dark-gray'],
             ];
         @endphp
 
         @foreach($walletTypes as $key => $info)
             @php $wallet = $wallets[$key] ?? null; @endphp
-            <div class="col-md-6 col-lg-3">
+            <div class="col-md-6 col-lg-4">
                 <div class="card h-100 border-0 shadow-sm rounded-4 {{ $info['color'] }} text-white">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start">

@@ -27,6 +27,13 @@
     </div>
 @endif
 
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
 <div class="row">
     <div class="col-lg-8 mx-auto">
         <!-- Current KYC Status Card -->
@@ -56,7 +63,9 @@
                                 Rejected
                             @endif
                         </h4>
-                        <p class="text-muted mb-1">Submitted: {{ $kyc->submitted_at->format('d M Y, h:i A') }}</p>
+                        <p class="text-muted mb-1">
+                            Submitted: {{ $kyc->submitted_at ? $kyc->submitted_at->format('d M Y, h:i A') : 'N/A' }}
+                        </p>
                         @if($kyc->status == 'rejected' && $kyc->admin_comment)
                             <div class="alert alert-danger mt-2 mb-0 py-2">
                                 <i class="bi bi-exclamation-triangle-fill me-1"></i> 
@@ -173,8 +182,8 @@
                             @enderror
                             @if($kyc && $kyc->front_image && $kyc->status == 'rejected')
                                 <div class="mt-2">
-                                    <span class="badge bg-light text-dark">Previously uploaded: {{ basename($kyc->front_image) }}</span>
-                                    <a href="{{ route('member.kyc.document', basename($kyc->front_image)) }}" target="_blank" class="ms-2">View</a>
+                                    <span class="badge bg-light text-dark">Previously uploaded</span>
+                                    <a href="{{ route('member.kyc.document', [$kyc, 'front_image']) }}" target="_blank" class="ms-2">View</a>
                                 </div>
                             @endif
                         </div>
@@ -190,8 +199,8 @@
                             @enderror
                             @if($kyc && $kyc->back_image && $kyc->status == 'rejected')
                                 <div class="mt-2">
-                                    <span class="badge bg-light text-dark">Previously uploaded: {{ basename($kyc->back_image) }}</span>
-                                    <a href="{{ route('member.kyc.document', basename($kyc->back_image)) }}" target="_blank" class="ms-2">View</a>
+                                    <span class="badge bg-light text-dark">Previously uploaded</span>
+                                    <a href="{{ route('member.kyc.document', [$kyc, 'back_image']) }}" target="_blank" class="ms-2">View</a>
                                 </div>
                             @endif
                         </div>
@@ -207,8 +216,8 @@
                             @enderror
                             @if($kyc && $kyc->selfie_image && $kyc->status == 'rejected')
                                 <div class="mt-2">
-                                    <span class="badge bg-light text-dark">Previously uploaded: {{ basename($kyc->selfie_image) }}</span>
-                                    <a href="{{ route('member.kyc.document', basename($kyc->selfie_image)) }}" target="_blank" class="ms-2">View</a>
+                                    <span class="badge bg-light text-dark">Previously uploaded</span>
+                                    <a href="{{ route('member.kyc.document', [$kyc, 'selfie_image']) }}" target="_blank" class="ms-2">View</a>
                                 </div>
                             @endif
                         </div>

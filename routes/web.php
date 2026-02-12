@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\VerifyController;
 use App\Http\Controllers\Auth\PaymentController;
+use App\Http\Controllers\Member\GenealogyController;
+use App\Http\Controllers\Member\WalletController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,7 +45,7 @@ Route::post('/email/verify/resend', [VerifyController::class, 'resend'])->name('
 
 /*
 |--------------------------------------------------------------------------
-| PAYMENT AFTER VERIFICATION
+| PAYMENT (AFTER AUTH + VERIFICATION)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -54,17 +56,61 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| MEMBER & ADMIN ROUTES – LOAD EXTERNAL FILES
-|--------------------------------------------------------------------------
-*/
-require __DIR__.'/member.php';
-require __DIR__.'/admin.php';
-
-/*
-|--------------------------------------------------------------------------
-| REDIRECT /dashboard TO MEMBER DASHBOARD
+| REDIRECT DASHBOARD
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
     return redirect()->route('member.dashboard');
 });
+
+/*
+|--------------------------------------------------------------------------
+| MEMBER ROUTES
+|--------------------------------------------------------------------------
+*/
+Route::prefix('member')->name('member.')->middleware(['auth', 'verified'])->group(function () {
+    // Genealogy
+    Route::get('/genealogy', [GenealogyController::class, 'index'])->name('genealogy.index');
+});
+
+/*
+|--------------------------------------------------------------------------
+| MEMBER WALLET ROUTES
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'verified'])
+    ->prefix('wallet')
+    ->name('member.wallet.')
+    ->group(function () {
+
+        // Dashboard
+        Route::get('/', [WalletController::class, 'index'])->name('index');
+
+        // Wallet Sections
+        Route::get('commission', [WalletController::class, 'commission'])->name('commission');
+        Route::get('shopping', [WalletController::class, 'shopping'])->name('shopping');
+        Route::get('transactions', [WalletController::class, 'transactions'])->name('transactions');
+        Route::get('funding', [WalletController::class, 'funding'])->name('funding');
+
+        // ✅ PAYMENT INIT – still needed to redirect to gateway
+        Route::post('paystack/init', [WalletController::class, 'initPaystack'])->name('paystack.init');
+        Route::post('flutterwave/init', [WalletController::class, 'initFlutterwave'])->name('flutterwave.init');
+
+        // ✅ NEW – process successful payment via AJAX (no gateway verification)
+        Route::post('payment/success', [WalletController::class, 'paymentSuccess'])->name('payment.success');
+
+        // ✅ Manual Bank Transfer
+        Route::post('request', [WalletController::class, 'requestFunding'])->name('request');
+
+        // ❌ VERIFY ROUTES REMOVED – no longer needed
+        // Route::get('paystack/verify', ...) – DELETED
+        // Route::get('flutterwave/verify', ...) – DELETED
+    });
+
+/*
+|--------------------------------------------------------------------------
+| EXTERNAL ROUTE FILES
+|--------------------------------------------------------------------------
+*/
+require __DIR__ . '/member.php';
+require __DIR__ . '/admin.php';

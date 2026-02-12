@@ -10,131 +10,140 @@ use Illuminate\Support\Facades\Auth;
 class GenealogyController extends Controller
 {
     /**
-     * Display the genealogy tree.
+     * Display the genealogy tree (OrgChart only, 3 generations).
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
-        
-        // Get the root member to view (default: current user)
-        $rootId = $request->get('member', $user->id);
-        $root = User::with(['package', 'rank'])
-                    ->where('id', $rootId)
-                    ->firstOrFail();
-        
-        // Security: ensure user can view this member (only descendants or self)
-        if (!$this->canViewGenealogy($user, $root)) {
-            abort(403, 'You do not have permission to view this member’s tree.');
-        }
+        $memberId = $request->get('member', Auth::id());
+        $root = User::with(['package', 'rank', 'leftChildren', 'rightChildren'])
+                    ->findOrFail($memberId);
 
-        // Load immediate children (left and right) with minimal data
-        $root->load(['leftChild', 'rightChild']);
+        // Build flat node array for OrgChart (depth = 0,1,2)
+        $nodes = $this->buildOrgChartNodes($root, null, 0, 2);
 
-        // Load deeper levels via a recursive function (or AJAX lazy load)
-        // For initial page load we load first 3 levels
-        $tree = $this->buildTree($root, 3);
-
-        return view('member.genealogy.index', compact('user', 'root', 'tree'));
-    }
-
-    /**
-     * AJAX endpoint to load more nodes when expanding.
-     */
-    public function loadChildren(Request $request)
-    {
-        $memberId = $request->get('member');
-        $member = User::with(['leftChild', 'rightChild'])->findOrFail($memberId);
-
-        // Security check: can current user view this member?
-        if (!$this->canViewGenealogy(Auth::user(), $member)) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $html = '';
-        if ($member->leftChild) {
-            $html .= view('member.genealogy.partials.node', ['node' => $member->leftChild, 'position' => 'left'])->render();
-        }
-        if ($member->rightChild) {
-            $html .= view('member.genealogy.partials.node', ['node' => $member->rightChild, 'position' => 'right'])->render();
-        }
-
-        return response()->json([
-            'left'  => $member->leftChild ? view('member.genealogy.partials.node', ['node' => $member->leftChild, 'position' => 'left'])->render() : null,
-            'right' => $member->rightChild ? view('member.genealogy.partials.node', ['node' => $member->rightChild, 'position' => 'right'])->render() : null,
+        return view('member.genealogy.index', [
+            'root'      => $root,
+            'nodesJson' => json_encode($nodes) // 👈 THIS WAS MISSING
         ]);
     }
 
     /**
-     * Check if the authenticated user can view the genealogy of a given member.
-     * Rules: admin can view all, member can view own tree and downlines.
+     * Recursively build OrgChart nodes up to maxDepth.
      */
-    private function canViewGenealogy(User $authUser, User $targetUser): bool
+    private function buildOrgChartNodes($user, $parentId = null, $depth = 0, $maxDepth = 2)
     {
-        if ($authUser->role === 'admin') {
-            return true;
+        if ($depth > $maxDepth || !$user) {
+            return [];
         }
 
-        // User can view their own tree
-        if ($authUser->id === $targetUser->id) {
-            return true;
+        $nodes = [];
+
+        // ---- Current user node ----
+        $position = null;
+        if ($parentId && isset($user->parent_position)) {
+            $position = $user->parent_position; // 'left' or 'right'
         }
 
-        // Check if target is a downline of auth user (descendant)
-        // We can either use a recursive query or a materialized path.
-        // For simplicity, we'll assume the tree is binary and we have placement_id chain.
-        // Here we check if auth user is an ancestor of target user.
-        return $this->isDescendantOf($authUser, $targetUser);
-    }
+        $nodes[] = [
+            'id'          => $user->id,
+            'pid'         => $parentId,
+            'name'        => $user->name,
+            'username'    => $user->username,
+            'pv'          => ($user->left_pv ?? 0) + ($user->right_pv ?? 0),
+            'rank'        => $user->rank->name ?? 'Member',
+            'package'     => $user->package->name ?? null,
+            'left_count'  => $user->leftChildren->count(),
+            'right_count' => $user->rightChildren->count(),
+            'position'    => $position,
+            'is_me'       => ($user->id == Auth::id()),
+            'initial'     => strtoupper(substr($user->name, 0, 1)),
+            'isEmpty'     => false,
+        ];
 
-    /**
-     * Check if $descendant is a descendant of $ancestor.
-     */
-    private function isDescendantOf(User $ancestor, User $descendant): bool
-    {
-        $maxDepth = 50; // safety
-        $current = $descendant;
-        while ($current->placement_id && $maxDepth-- > 0) {
-            if ($current->placement_id == $ancestor->id) {
-                return true;
-            }
-            $current = User::find($current->placement_id);
-            if (!$current) break;
-        }
-        return false;
-    }
-
-    /**
-     * Recursively build the tree up to a certain depth.
-     */
-    private function buildTree(User $node, int $depth = 3): array
-    {
-        if ($depth <= 0) {
-            return [
-                'id'        => $node->id,
-                'name'      => $node->name,
-                'username'  => $node->username,
-                'has_more'  => ($node->left_count + $node->right_count) > 0,
-                'left_pv'   => $node->left_pv,
-                'right_pv'  => $node->right_pv,
-                'left'      => null,
-                'right'     => null,
+        // ---- Left child ----
+        $leftChild = $user->leftChildren->first(); // only one left child in binary
+        if ($leftChild) {
+            $leftChild->parent_position = 'left'; // mark for styling
+            $nodes = array_merge($nodes, $this->buildOrgChartNodes($leftChild, $user->id, $depth + 1, $maxDepth));
+        } else {
+            // Empty left slot – create a placeholder node
+            $nodes[] = [
+                'id'          => 'empty-left-' . $user->id,
+                'pid'         => $user->id,
+                'name'        => 'Vacant',
+                'username'    => '—',
+                'pv'          => '0.0',
+                'rank'        => '—',
+                'package'     => null,
+                'left_count'  => 0,
+                'right_count' => 0,
+                'position'    => 'left',
+                'is_me'       => false,
+                'initial'     => '<i class="bi bi-plus-lg"></i>',
+                'isEmpty'     => true,
             ];
         }
 
-        $leftChild  = $node->leftChild;
-        $rightChild = $node->rightChild;
+        // ---- Right child ----
+        $rightChild = $user->rightChildren->first();
+        if ($rightChild) {
+            $rightChild->parent_position = 'right';
+            $nodes = array_merge($nodes, $this->buildOrgChartNodes($rightChild, $user->id, $depth + 1, $maxDepth));
+        } else {
+            $nodes[] = [
+                'id'          => 'empty-right-' . $user->id,
+                'pid'         => $user->id,
+                'name'        => 'Vacant',
+                'username'    => '—',
+                'pv'          => '0.0',
+                'rank'        => '—',
+                'package'     => null,
+                'left_count'  => 0,
+                'right_count' => 0,
+                'position'    => 'right',
+                'is_me'       => false,
+                'initial'     => '<i class="bi bi-plus-lg"></i>',
+                'isEmpty'     => true,
+            ];
+        }
 
-        return [
-            'id'        => $node->id,
-            'name'      => $node->name,
-            'username'  => $node->username,
-            'package'   => $node->package?->name,
-            'rank'      => $node->rank?->name,
-            'has_more'  => ($node->left_count + $node->right_count) > 0,
-            'left_pv'   => $node->left_pv,
-            'right_pv'  => $node->right_pv,
-            'left'      => $leftChild ? $this->buildTree($leftChild, $depth - 1) : null,
-            'right'     => $rightChild ? $this->buildTree($rightChild, $depth - 1) : null,
-        ];
+        return $nodes;
+    }
+
+    /**
+     * AJAX endpoint: load children of a specific member and return HTML.
+     * (Optional – keep if you still use it elsewhere)
+     */
+    public function load(Request $request)
+    {
+        $memberId = $request->get('member');
+        $user = User::with(['leftChildren', 'rightChildren', 'package', 'rank'])
+                    ->findOrFail($memberId);
+
+        $leftHtml = null;
+        $rightHtml = null;
+
+        if ($user->leftChildren->isNotEmpty()) {
+            $leftHtml = view('member.genealogy.partials.node', [
+                'node' => $user->leftChildren->first(),
+                'position' => 'left',
+                'isRoot' => false
+            ])->render();
+        }
+
+        if ($user->rightChildren->isNotEmpty()) {
+            $rightHtml = view('member.genealogy.partials.node', [
+                'node' => $user->rightChildren->first(),
+                'position' => 'right',
+                'isRoot' => false
+            ])->render();
+        }
+
+        return response()->json([
+            'left'   => $leftHtml,
+            'right'  => $rightHtml,
+            'has_left'  => $user->leftChildren->count() > 0,
+            'has_right' => $user->rightChildren->count() > 0,
+        ]);
     }
 }

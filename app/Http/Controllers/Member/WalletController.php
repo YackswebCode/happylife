@@ -1,9 +1,9 @@
 <?php
-// app/Http/Controllers/Member/WalletController.php
 
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
 use App\Models\FundingRequest;
@@ -26,8 +26,8 @@ class WalletController extends Controller
                         ->get()
                         ->keyBy('type');
 
-        // Ensure all wallet types exist (create if not)
-        $types = ['commission', 'registration', 'rank', 'shopping'];
+        // Only keep active wallet types (rank removed)
+        $types = ['commission', 'registration', 'shopping'];
         foreach ($types as $type) {
             if (!isset($wallets[$type])) {
                 $wallets[$type] = Wallet::create([
@@ -39,7 +39,7 @@ class WalletController extends Controller
             }
         }
 
-        // Recent transactions across all wallets
+        // Recent transactions
         $recentTransactions = WalletTransaction::where('user_id', $user->id)
                                 ->with('wallet')
                                 ->latest()
@@ -66,20 +66,6 @@ class WalletController extends Controller
                         ->paginate(20);
 
         return view('member.wallet.commission', compact('wallet', 'transactions'));
-    }
-
-    /**
-     * Rank wallet details.
-     */
-    public function rank()
-    {
-        $user = Auth::user();
-        $wallet = $this->getOrCreateWallet($user->id, 'rank');
-        $transactions = WalletTransaction::where('wallet_id', $wallet->id)
-                        ->latest()
-                        ->paginate(20);
-
-        return view('member.wallet.rank', compact('wallet', 'transactions'));
     }
 
     /**
@@ -111,7 +97,7 @@ class WalletController extends Controller
     }
 
     /**
-     * Show funding page (form for deposit).
+     * Show funding page (dual gateway UI).
      */
     public function funding()
     {
@@ -123,19 +109,15 @@ class WalletController extends Controller
     /**
      * Initialize Paystack payment.
      */
-    public function initPayment(Request $request)
+    public function initPaystack(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:100', // minimum ₦100
+            'amount' => 'required|numeric|min:100',
         ]);
 
         $user = Auth::user();
-        $amount = $request->amount * 100; // Paystack uses kobo
-
+        $amount = $request->amount * 100; // kobo
         $reference = 'FUND-' . strtoupper(Str::random(20));
-
-        // Store transaction reference in session or temp record
-        session(['payment_reference' => $reference, 'payment_amount' => $request->amount]);
 
         $paystackSecret = config('services.paystack.secret');
         $response = Http::withHeaders([
@@ -145,10 +127,10 @@ class WalletController extends Controller
             'email' => $user->email,
             'amount' => $amount,
             'reference' => $reference,
-            'callback_url' => route('member.wallet.verify-payment'),
+            'callback_url' => route('member.wallet.index'), // ✅ Direct to wallet dashboard
             'metadata' => [
                 'user_id' => $user->id,
-                'wallet_type' => 'registration', // funding goes to registration wallet
+                'wallet_type' => 'registration',
             ],
         ]);
 
@@ -156,66 +138,113 @@ class WalletController extends Controller
             return redirect($response['data']['authorization_url']);
         }
 
-        return back()->with('error', 'Unable to initialize payment. Please try again.');
+        return back()->with('error', 'Unable to initialize Paystack payment.');
     }
 
     /**
-     * Verify Paystack payment and credit registration wallet.
+     * Initialize Flutterwave payment.
      */
-    public function verifyPayment(Request $request)
+    public function initFlutterwave(Request $request)
     {
-        $reference = $request->reference ?? session('payment_reference');
+        $request->validate([
+            'amount' => 'required|numeric|min:100',
+        ]);
 
-        if (!$reference) {
-            return redirect()->route('member.wallet.funding')->with('error', 'Invalid payment reference.');
-        }
+        $user = Auth::user();
+        $amount = $request->amount;
+        $reference = 'FUND-' . strtoupper(Str::random(20));
 
-        $paystackSecret = config('services.paystack.secret');
+        $flutterwaveSecret = config('services.flutterwave.secret');
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $paystackSecret,
-        ])->get("https://api.paystack.co/transaction/verify/{$reference}");
+            'Authorization' => 'Bearer ' . $flutterwaveSecret,
+            'Content-Type' => 'application/json',
+        ])->post('https://api.flutterwave.com/v3/payments', [
+            'tx_ref' => $reference,
+            'amount' => $amount,
+            'currency' => 'NGN',
+            'redirect_url' => route('member.wallet.index'), // ✅ Direct to wallet dashboard
+            'customer' => [
+                'email' => $user->email,
+                'name' => $user->name,
+            ],
+            'customizations' => [
+                'title' => 'Fund Registration Wallet',
+                'description' => 'Add funds to your Happylife registration wallet',
+                'logo' => asset('images/logo.png'),
+            ],
+            'meta' => [
+                'user_id' => $user->id,
+                'wallet_type' => 'registration',
+            ],
+        ]);
 
-        if ($response->successful() && $response['status'] && $response['data']['status'] === 'success') {
-            $amount = $response['data']['amount'] / 100; // convert back to Naira
-            $user = Auth::user() ?? User::find($response['data']['metadata']['user_id']);
-
-            DB::transaction(function () use ($user, $amount, $reference) {
-                // Credit registration wallet
-                $wallet = $this->getOrCreateWallet($user->id, 'registration');
-                $wallet->balance += $amount;
-                $wallet->save();
-
-                // Create transaction record
-                WalletTransaction::create([
-                    'wallet_id' => $wallet->id,
-                    'user_id' => $user->id,
-                    'type' => WalletTransaction::TYPE_CREDIT,
-                    'amount' => $amount,
-                    'description' => 'Wallet funding via Paystack',
-                    'reference' => $reference,
-                    'status' => WalletTransaction::STATUS_COMPLETED,
-                    'metadata' => [
-                        'gateway' => 'paystack',
-                        'channel' => $response['data']['channel'] ?? null,
-                    ],
-                ]);
-
-                // Log funding request (optional)
-                FundingRequest::create([
-                    'user_id' => $user->id,
-                    'amount' => $amount,
-                    'payment_method' => 'online',
-                    'transaction_id' => $reference,
-                    'status' => 'approved',
-                    'approved_at' => now(),
-                ]);
-            });
-
-            return redirect()->route('member.wallet.index')
-                ->with('success', 'Your wallet has been funded with ₦' . number_format($amount, 2));
+        if ($response->successful() && $response['status'] === 'success') {
+            return redirect($response['data']['link']);
         }
 
-        return redirect()->route('member.wallet.funding')->with('error', 'Payment verification failed.');
+        return back()->with('error', 'Unable to initialize Flutterwave payment.');
+    }
+
+    /**
+     * ✅ Process successful payment from frontend callback.
+     * No gateway verification – trusts the JS callback.
+     */
+    public function paymentSuccess(Request $request)
+    {
+        $request->validate([
+            'reference' => 'required|string',
+            'amount'    => 'required|numeric|min:100',
+            'gateway'   => 'required|in:paystack,flutterwave',
+        ]);
+
+        $user = Auth::user();
+        $reference = $request->reference;
+        $amount = $request->amount;
+        $gateway = $request->gateway;
+
+        // Prevent duplicate processing
+        $exists = FundingRequest::where('transaction_id', $reference)->exists();
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This transaction has already been processed.'
+            ], 409);
+        }
+
+        DB::transaction(function () use ($user, $amount, $reference, $gateway) {
+            // Credit registration wallet
+            $wallet = $this->getOrCreateWallet($user->id, 'registration');
+            $wallet->balance += $amount;
+            $wallet->save();
+
+            // Create transaction record
+            WalletTransaction::create([
+                'wallet_id'   => $wallet->id,
+                'user_id'     => $user->id,
+                'type'        => WalletTransaction::TYPE_CREDIT,
+                'amount'      => $amount,
+                'description' => "Wallet funding via {$gateway}",
+                'reference'   => $reference,
+                'status'      => WalletTransaction::STATUS_COMPLETED,
+                'metadata'    => ['gateway' => $gateway],
+            ]);
+
+            // Log funding request (auto-approved)
+            FundingRequest::create([
+                'user_id'         => $user->id,
+                'amount'          => $amount,
+                'payment_method'  => 'online',
+                'transaction_id'  => $reference,
+                'status'          => 'approved',
+                'approved_at'     => now(),
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Wallet funded successfully!',
+            'redirect' => route('member.wallet.index')
+        ]);
     }
 
     /**
@@ -255,10 +284,9 @@ class WalletController extends Controller
      */
     private function getOrCreateWallet($userId, $type)
     {
-        $wallet = Wallet::firstOrCreate(
+        return Wallet::firstOrCreate(
             ['user_id' => $userId, 'type' => $type],
             ['balance' => 0, 'locked_balance' => 0]
         );
-        return $wallet;
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Wallet; // <-- ADDED
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,8 +18,24 @@ class ProfileController extends Controller
     public function index()
     {
         $user = Auth::user()->load(['package', 'rank', 'sponsor', 'placement']);
-        
-        return view('member.profile.index', compact('user'));
+
+        // ----- FETCH REAL WALLET BALANCES -----
+        $walletBalances = Wallet::where('user_id', $user->id)
+            ->pluck('balance', 'type')
+            ->toArray();
+
+        $commissionBalance   = $walletBalances['commission'] ?? 0;
+        $registrationBalance = $walletBalances['registration'] ?? 0;
+        $rankBalance        = $walletBalances['rank'] ?? 0;
+        $shoppingBalance    = $walletBalances['shopping'] ?? 0;
+
+        return view('member.profile.index', compact(
+            'user',
+            'commissionBalance',
+            'registrationBalance',
+            'rankBalance',
+            'shoppingBalance'
+        ));
     }
 
     /**
@@ -27,7 +44,6 @@ class ProfileController extends Controller
     public function edit()
     {
         $user = Auth::user();
-        
         return view('member.profile.edit', compact('user'));
     }
 
@@ -48,19 +64,16 @@ class ProfileController extends Controller
             'phone'   => 'nullable|string|max:20',
             'country' => 'nullable|string|max:100',
             'state'   => 'nullable|string|max:100',
-            // Password change validation
             'current_password' => 'nullable|required_with:new_password|current_password',
             'new_password'     => 'nullable|min:8|confirmed',
         ]);
 
-        // Update allowed fields
         $user->name    = $request->name;
         $user->email   = $request->email;
         $user->phone   = $request->phone;
         $user->country = $request->country;
         $user->state   = $request->state;
 
-        // Update password if provided
         if ($request->filled('new_password')) {
             $user->password = Hash::make($request->new_password);
         }

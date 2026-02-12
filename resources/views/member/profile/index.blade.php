@@ -154,34 +154,33 @@
 </div>
 
 <!-- Additional Account Details -->
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-0 py-3">
-                <h5 class="mb-0 text-dark-gray"><i class="bi bi-wallet2 text-teal-blue me-2"></i>Wallet Balances</h5>
-            </div>
-            <div class="card-body">
-                <div class="list-group list-group-flush">
-                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
-                        <span>Commission Wallet</span>
-                        <span class="fw-bold text-teal-blue">₦{{ number_format($user->commission_wallet_balance, 2) }}</span>
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
-                        <span>Registration Wallet</span>
-                        <span class="fw-bold text-teal-blue">₦{{ number_format($user->registration_wallet_balance, 2) }}</span>
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
-                        <span>Rank Wallet</span>
-                        <span class="fw-bold text-teal-blue">₦{{ number_format($user->rank_wallet_balance, 2) }}</span>
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
-                        <span>Shopping Wallet</span>
-                        <span class="fw-bold text-teal-blue">₦{{ number_format($user->shopping_wallet_balance, 2) }}</span>
-                    </div>
+<div class="col-md-6 mb-4">
+    <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="mb-0 text-dark-gray"><i class="bi bi-wallet2 text-teal-blue me-2"></i>Wallet Balances</h5>
+        </div>
+        <div class="card-body">
+            <div class="list-group list-group-flush">
+                <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
+                    <span>Commission Wallet</span>
+                    <span class="fw-bold text-teal-blue">₦{{ number_format($commissionBalance, 2) }}</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
+                    <span>Registration Wallet</span>
+                    <span class="fw-bold text-teal-blue">₦{{ number_format($registrationBalance, 2) }}</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
+                    <span>Rank Wallet</span>
+                    <span class="fw-bold text-teal-blue">₦{{ number_format($rankBalance, 2) }}</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
+                    <span>Shopping Wallet</span>
+                    <span class="fw-bold text-teal-blue">₦{{ number_format($shoppingBalance, 2) }}</span>
                 </div>
             </div>
         </div>
     </div>
+</div>
     
     <div class="col-md-6 mb-4">
         <div class="card border-0 shadow-sm h-100">

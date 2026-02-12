@@ -260,4 +260,27 @@ public function getUpgradeablePackagesAttribute()
         ->orderBy('order')
         ->get();
 }
+// User.php
+
+public function leftChildren()
+{
+    return $this->hasMany(User::class, 'placement_id', 'id')
+                ->where('placement_position', 'left')
+                ->with(['package', 'rank']); // eager load useful data
+}
+
+public function rightChildren()
+{
+    return $this->hasMany(User::class, 'placement_id', 'id')
+                ->where('placement_position', 'right')
+                ->with(['package', 'rank']);
+}
+
+public function children()
+{
+    return $this->hasMany(User::class, 'placement_id', 'id')
+                ->with(['package', 'rank']);
+}
+
+
 }

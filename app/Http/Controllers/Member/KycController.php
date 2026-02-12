@@ -17,7 +17,7 @@ class KycController extends Controller
     {
         $user = Auth::user();
         $kyc = $user->kyc; // assumes hasOne relation in User model
-        
+
         return view('member.profile.kyc', compact('user', 'kyc'));
     }
 
@@ -28,24 +28,24 @@ class KycController extends Controller
     {
         $user = Auth::user();
 
-        // Validate
+        // Prevent multiple pending submissions
+        if ($user->kyc && $user->kyc->status === 'pending') {
+            return redirect()->route('member.kyc.index')
+                ->with('error', 'You already have a pending KYC submission. Please wait for verification.');
+        }
+
         $request->validate([
             'document_type'   => 'required|in:national_id,passport,driver_license,voter_id,utility_bill',
             'id_number'       => 'nullable|string|max:100',
             'issue_date'      => 'nullable|date',
             'expiry_date'     => 'nullable|date|after:issue_date',
             'place_of_issue'  => 'nullable|string|max:100',
-            'front_image'     => 'required|image|mimes:jpeg,png,jpg,pdf|max:5120', // 5MB
+            'front_image'     => 'required|image|mimes:jpeg,png,jpg,pdf|max:5120',
             'back_image'      => 'nullable|image|mimes:jpeg,png,jpg,pdf|max:5120',
             'selfie_image'    => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
-        // Delete any previous pending KYC? Or allow only one submission?
-        // Here we deactivate previous pending/rejected by setting new one as current.
-        // Option: soft delete or archive; simple approach: user can have multiple records,
-        // we just create a new one and keep history.
-        
-        // Upload files
+        // Upload files – store in storage/app/public/kyc/{user_id}/
         $frontPath = $request->file('front_image')->store('kyc/' . $user->id, 'public');
         $backPath  = $request->hasFile('back_image') 
             ? $request->file('back_image')->store('kyc/' . $user->id, 'public') 
@@ -54,7 +54,6 @@ class KycController extends Controller
             ? $request->file('selfie_image')->store('kyc/' . $user->id, 'public') 
             : null;
 
-        // Create KYC record
         $kyc = new Kyc();
         $kyc->user_id        = $user->id;
         $kyc->document_type  = $request->document_type;
@@ -74,18 +73,15 @@ class KycController extends Controller
     }
 
     /**
-     * Update existing KYC (if rejected, user can resubmit)
+     * Update existing KYC (only when rejected)
      */
     public function update(Request $request, Kyc $kyc)
     {
-        // Ensure the KYC belongs to the authenticated user and is in reject status
-        $this->authorize('update', $kyc); // optional policy
-
+        // Ensure the KYC belongs to the authenticated user and is rejected
         if ($kyc->user_id !== Auth::id() || $kyc->status !== 'rejected') {
-            abort(403);
+            abort(403, 'Unauthorized action.');
         }
 
-        // Validate similar to store, but allow existing files to be kept if not re-uploaded
         $request->validate([
             'document_type'   => 'required|in:national_id,passport,driver_license,voter_id,utility_bill',
             'id_number'       => 'nullable|string|max:100',
@@ -97,14 +93,13 @@ class KycController extends Controller
             'selfie_image'    => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
-        // Update fields
         $kyc->document_type  = $request->document_type;
         $kyc->id_number      = $request->id_number;
         $kyc->issue_date     = $request->issue_date;
         $kyc->expiry_date    = $request->expiry_date;
         $kyc->place_of_issue = $request->place_of_issue;
 
-        // Handle file updates
+        // Handle file updates – delete old files and store new ones
         if ($request->hasFile('front_image')) {
             Storage::disk('public')->delete($kyc->front_image);
             $kyc->front_image = $request->file('front_image')->store('kyc/' . $kyc->user_id, 'public');
@@ -118,11 +113,11 @@ class KycController extends Controller
             $kyc->selfie_image = $request->file('selfie_image')->store('kyc/' . $kyc->user_id, 'public');
         }
 
-        $kyc->status       = 'pending';
+        $kyc->status        = 'pending';
         $kyc->admin_comment = null;
-        $kyc->submitted_at = now();
-        $kyc->verified_at  = null;
-        $kyc->verified_by  = null;
+        $kyc->submitted_at  = now();
+        $kyc->verified_at   = null;
+        $kyc->verified_by   = null;
         $kyc->save();
 
         return redirect()->route('member.kyc.index')
@@ -130,15 +125,26 @@ class KycController extends Controller
     }
 
     /**
-     * View uploaded document (optional)
+     * View a specific KYC document securely.
+     * Route: /member/kyc/document/{kyc}/{field}
      */
-    public function viewDocument($filename)
+    public function viewDocument(Kyc $kyc, $field)
     {
-        // Secure: only allow user to view their own documents, or admin
-        $path = 'kyc/' . Auth::id() . '/' . $filename;
-        if (!Storage::disk('public')->exists($path)) {
+        // Authorize: only the owner or admin can view
+        if ($kyc->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
+            abort(403);
+        }
+
+        // Allowed fields that contain file paths
+        if (!in_array($field, ['front_image', 'back_image', 'selfie_image'])) {
             abort(404);
         }
+
+        $path = $kyc->$field;
+        if (!$path || !Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
         return response()->file(Storage::disk('public')->path($path));
     }
 }

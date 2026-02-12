@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Commission;
 use App\Models\WalletTransaction;
 use App\Models\Rank;
+use App\Models\Wallet; // <-- ADDED to query wallet balances directly
 
 class DashboardController extends Controller
 {
@@ -49,7 +50,7 @@ class DashboardController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | NEXT RANK LOGIC (NEW)
+        | NEXT RANK LOGIC (unchanged)
         |--------------------------------------------------------------------------
         */
         $nextRank = null;
@@ -68,23 +69,39 @@ class DashboardController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | USER STATISTICS
+        | FETCH ACTUAL WALLET BALANCES FROM `wallets` TABLE
+        |--------------------------------------------------------------------------
+        */
+        $walletBalances = Wallet::where('user_id', $user->id)
+            ->pluck('balance', 'type')
+            ->toArray();
+
+        // Fallback to zero if a wallet type doesn't exist yet
+        $commissionBalance   = $walletBalances['commission'] ?? 0;
+        $registrationBalance = $walletBalances['registration'] ?? 0;
+        $rankBalance        = $walletBalances['rank'] ?? 0;
+        $shoppingBalance    = $walletBalances['shopping'] ?? 0;
+
+        /*
+        |--------------------------------------------------------------------------
+        | USER STATISTICS – UPDATED WITH REAL WALLET BALANCES
         |--------------------------------------------------------------------------
         */
         $stats = [
-            'total_pv' => $user->total_pv ?? 0,
-            'current_pv' => $user->current_pv ?? 0,
-            'commission_balance' => $user->commission_wallet_balance ?? 0,
-            'registration_balance' => $user->registration_wallet_balance ?? 0,
-            'rank_balance' => $user->rank_wallet_balance ?? 0,
-            'shopping_balance' => $user->shopping_wallet_balance ?? 0,
-            'left_count' => $user->left_count ?? 0,
-            'right_count' => $user->right_count ?? 0,
-            'direct_downlines' => $user->directDownlines()->count(),
-            'total_downlines' => $this->getTotalDownlines($user),
+            'total_pv'              => $user->total_pv ?? 0,
+            'current_pv'           => $user->current_pv ?? 0,
+            // Replace old user-column balances with real wallet balances
+            'commission_balance'   => $commissionBalance,
+            'registration_balance' => $registrationBalance,
+            'rank_balance'        => $rankBalance,
+            'shopping_balance'    => $shoppingBalance,
+            'left_count'          => $user->left_count ?? 0,
+            'right_count'         => $user->right_count ?? 0,
+            'direct_downlines'    => $user->directDownlines()->count(),
+            'total_downlines'     => $this->getTotalDownlines($user),
         ];
 
-        // Get recent activities
+        // Get recent activities (unchanged)
         $recent_activities = $this->getRecentActivities($user);
 
         return view('member.dashboard', compact(
@@ -95,6 +112,9 @@ class DashboardController extends Controller
         ));
     }
 
+    /**
+     * Recursively count all downlines (unchanged)
+     */
     private function getTotalDownlines($user)
     {
         $count = $user->directDownlines()->count();
@@ -106,6 +126,9 @@ class DashboardController extends Controller
         return $count;
     }
 
+    /**
+     * Get recent commissions & wallet transactions (unchanged)
+     */
     private function getRecentActivities($user)
     {
         $activities = collect();
@@ -118,13 +141,13 @@ class DashboardController extends Controller
                 ->get()
                 ->map(function ($commission) {
                     return [
-                        'type' => 'commission',
-                        'title' => 'Commission Earned',
+                        'type'        => 'commission',
+                        'title'       => 'Commission Earned',
                         'description' => $commission->description,
-                        'amount' => $commission->amount,
-                        'date' => $commission->created_at,
-                        'icon' => 'bi-cash-stack',
-                        'color' => 'text-green-600'
+                        'amount'      => $commission->amount,
+                        'date'        => $commission->created_at,
+                        'icon'        => 'bi-cash-stack',
+                        'color'       => 'text-green-600'
                     ];
                 });
 
@@ -141,13 +164,13 @@ class DashboardController extends Controller
                 ->get()
                 ->map(function ($transaction) {
                     return [
-                        'type' => 'wallet',
-                        'title' => ucfirst($transaction->type) . ' Transaction',
+                        'type'        => 'wallet',
+                        'title'       => ucfirst($transaction->type) . ' Transaction',
                         'description' => $transaction->description,
-                        'amount' => $transaction->amount,
-                        'date' => $transaction->created_at,
-                        'icon' => $transaction->type == 'credit' ? 'bi-plus-circle' : 'bi-dash-circle',
-                        'color' => $transaction->type == 'credit' ? 'text-green-600' : 'text-red-600'
+                        'amount'      => $transaction->amount,
+                        'date'        => $transaction->created_at,
+                        'icon'        => $transaction->type == 'credit' ? 'bi-plus-circle' : 'bi-dash-circle',
+                        'color'       => $transaction->type == 'credit' ? 'text-green-600' : 'text-red-600'
                     ];
                 });
 
