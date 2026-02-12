@@ -1,6 +1,6 @@
 @extends('layouts.member')
 
-@section('title', 'Fund Wallet - Happylife')
+@section('title', 'Fund Shopping Wallet - Happylife')
 
 @section('content')
 <div class="container-fluid px-4">
@@ -28,8 +28,8 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-header bg-white border-0 py-3">
-                    <h4 class="mb-0 text-dark-gray">Fund Your Registration Wallet</h4>
-                    <p class="text-muted mb-0">Choose your preferred funding method</p>
+                    <h4 class="mb-0 text-dark-gray">Fund Your Shopping Wallet</h4>
+                    <p class="text-muted mb-0">Add money to your shopping wallet to purchase products</p>
                 </div>
                 <div class="card-body p-4">
                     <!-- Payment Method Tabs -->
@@ -65,27 +65,25 @@
                                 <div class="mb-4">
                                     <label class="form-label fw-semibold">Choose Payment Gateway</label>
                                     <div class="row g-3">
-                                        {{-- Paystack Card --}}
                                         <div class="col-md-6">
                                             <div class="gateway-card card h-100 border-0 shadow-sm selected" data-gateway="paystack">
                                                 <div class="card-body d-flex align-items-center">
                                                     <input type="radio" name="payment_gateway" value="paystack" class="gateway-radio me-3" checked>
                                                     <div class="d-flex align-items-center">
-                                                         <img src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Paystack.png" 
-                                                         alt="Paystack" height="40" class="me-2">
+                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Paystack.png" 
+                                                             alt="Paystack" height="40" class="me-2">
                                                         <span class="fw-semibold">Paystack</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        {{-- Flutterwave Card --}}
                                         <div class="col-md-6">
                                             <div class="gateway-card card h-100 border-0 shadow-sm" data-gateway="flutterwave">
                                                 <div class="card-body d-flex align-items-center">
                                                     <input type="radio" name="payment_gateway" value="flutterwave" class="gateway-radio me-3">
                                                     <div class="d-flex align-items-center">
                                                         <img src="https://flutterwave.com/images/logo/full.svg" 
-                                                         alt="Flutterwave" height="40" width="100" class="me-2">
+                                                             alt="Flutterwave" height="40" width="100" class="me-2">
                                                         <span class="fw-semibold">Flutterwave</span>
                                                     </div>
                                                 </div>
@@ -148,6 +146,8 @@
                             <form action="{{ route('member.wallet.request') }}" method="POST" enctype="multipart/form-data" id="bankTransferForm">
                                 @csrf
                                 <input type="hidden" name="payment_method" value="bank_transfer">
+                                <!-- 👇 Explicitly set wallet type to shopping -->
+                                <input type="hidden" name="wallet_type" value="shopping">
 
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Amount Paid (₦)</label>
@@ -183,7 +183,7 @@
                                     </div>
                                 </div>
 
-                                <button type="submit"  class="btn btn-red w-100 py-3 rounded-pill fw-semibold">
+                                <button type="submit" class="btn btn-red w-100 py-3 rounded-pill fw-semibold">
                                     <i class="bi bi-send me-2"></i> Submit Funding Request
                                 </button>
                                 <p class="text-muted small text-center mt-3 mb-0">
@@ -214,6 +214,9 @@
                                     <div>
                                         <span class="fw-semibold">₦{{ number_format($req->amount, 2) }}</span>
                                         <span class="badge bg-light text-dark ms-2">{{ $req->payment_method == 'online' ? 'Online' : 'Bank Transfer' }}</span>
+                                        @if(isset($req->wallet_type))
+                                            <span class="badge bg-info text-dark ms-1">{{ ucfirst($req->wallet_type) }}</span>
+                                        @endif
                                     </div>
                                     <div>
                                         <span class="badge 
@@ -243,20 +246,17 @@
 <!-- Payment Handling Script -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // ----- Gateway Card Selection (with radio) -----
+        // Gateway Card Selection
         const gatewayCards = document.querySelectorAll('.gateway-card');
         gatewayCards.forEach(card => {
-            // Click on card selects the radio
             card.addEventListener('click', function(e) {
                 if (e.target.type === 'radio') return;
                 const radio = this.querySelector('.gateway-radio');
                 radio.checked = true;
-                // Update selected style
                 gatewayCards.forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
             });
 
-            // Radio change also updates style
             const radio = card.querySelector('.gateway-radio');
             radio.addEventListener('change', function() {
                 if (this.checked) {
@@ -266,14 +266,13 @@
             });
         });
 
-        // ----- Proceed to Payment -----
+        // Proceed to Payment
         const proceedBtn = document.getElementById('proceedToPaymentBtn');
         proceedBtn.addEventListener('click', function() {
             const amount = document.getElementById('onlineAmount').value;
             const gateway = document.querySelector('input[name="payment_gateway"]:checked')?.value;
             const termsChecked = document.getElementById('terms_online').checked;
 
-            // Validations
             if (!amount || amount < 100) {
                 alert('Please enter a valid amount (minimum ₦100).');
                 return;
@@ -287,7 +286,6 @@
                 return;
             }
 
-            // Disable button and show spinner
             proceedBtn.disabled = true;
             proceedBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Redirecting...';
 
@@ -307,19 +305,17 @@
             const handler = PaystackPop.setup({
                 key: '{{ config("services.paystack.public_key") }}',
                 email: userEmail,
-                amount: amount * 100, // kobo
+                amount: amount * 100,
                 currency: 'NGN',
                 ref: reference,
                 metadata: {
                     user_id: userId,
-                    wallet_type: 'registration'
+                    wallet_type: 'shopping'      // 👈 now funds shopping wallet
                 },
                 callback: function(response) {
-                    // ✅ Credit wallet via AJAX – no backend verification
                     processPayment(response.reference, amount, 'paystack');
                 },
                 onClose: function() {
-                    // Re-enable button
                     proceedBtn.disabled = false;
                     proceedBtn.innerHTML = '<i class="bi bi-lock-fill me-2"></i> Proceed to Payment Gateway';
                 }
@@ -345,19 +341,17 @@
                 },
                 customizations: {
                     title: 'Happylife Multipurpose Int\'l',
-                    description: 'Fund Registration Wallet',
+                    description: 'Fund Shopping Wallet',   // 👈 updated description
                     logo: '{{ asset("images/logo.png") }}',
                 },
                 meta: {
                     user_id: userId,
-                    wallet_type: 'registration'
+                    wallet_type: 'shopping'       // 👈 now funds shopping wallet
                 },
                 callback: function(response) {
-                    // ✅ Credit wallet via AJAX
                     processPayment(response.tx_ref, amount, 'flutterwave');
                 },
                 onclose: function() {
-                    // Re-enable button
                     proceedBtn.disabled = false;
                     proceedBtn.innerHTML = '<i class="bi bi-lock-fill me-2"></i> Proceed to Payment Gateway';
                 }
@@ -375,13 +369,12 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ reference, amount, gateway })
+                body: JSON.stringify({ reference, amount, gateway, wallet_type: 'shopping' }) // 👈 explicit
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     showFlashMessage('success', data.message);
-                    // Redirect to wallet dashboard after short delay
                     setTimeout(() => {
                         window.location.href = data.redirect;
                     }, 2000);
@@ -399,9 +392,8 @@
             });
         }
 
-        // ----- Dynamic Flash Message Helper -----
+        // Flash Message Helper
         function showFlashMessage(type, message) {
-            // Remove any existing dynamic alert
             const oldAlert = document.querySelector('.dynamic-alert');
             if (oldAlert) oldAlert.remove();
 
@@ -412,13 +404,11 @@
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-
-            // Insert at the top of the container
             const container = document.querySelector('.container-fluid.px-4');
             container.prepend(alertDiv);
         }
 
-        // ----- Bank Transfer: Loading state on submit -----
+        // Bank Transfer: loading state
         const bankForm = document.getElementById('bankTransferForm');
         if (bankForm) {
             bankForm.addEventListener('submit', function() {
@@ -428,7 +418,7 @@
             });
         }
 
-        // ----- Auto-select first gateway on page load -----
+        // Auto-select first gateway
         if (gatewayCards.length > 0) {
             gatewayCards[0].classList.add('selected');
         }

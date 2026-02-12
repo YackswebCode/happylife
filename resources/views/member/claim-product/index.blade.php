@@ -117,7 +117,7 @@
                                 <small class="text-secondary">You will receive your product at this location.</small>
                             </div>
                             <div class="col-12 mt-4">
-                                <button type="submit" class="btn btn-happylife-red btn-lg w-100 py-3">
+                                <button type="submit" class="btn btn-danger btn-happylife-red btn-lg w-100 py-3">
                                     <i class="bi bi-check2-circle me-2"></i> Submit Claim Request
                                 </button>
                             </div>

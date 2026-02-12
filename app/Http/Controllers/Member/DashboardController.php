@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Commission;
 use App\Models\WalletTransaction;
 use App\Models\Rank;
-use App\Models\Wallet; // <-- ADDED to query wallet balances directly
 
 class DashboardController extends Controller
 {
@@ -50,7 +49,7 @@ class DashboardController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | NEXT RANK LOGIC (unchanged)
+        | NEXT RANK LOGIC
         |--------------------------------------------------------------------------
         */
         $nextRank = null;
@@ -61,7 +60,6 @@ class DashboardController extends Controller
                 ->orderBy('level')
                 ->first();
         } else {
-            // User has no rank yet
             $nextRank = Rank::where('is_active', true)
                 ->orderBy('level')
                 ->first();
@@ -69,39 +67,35 @@ class DashboardController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | FETCH ACTUAL WALLET BALANCES FROM `wallets` TABLE
+        | FETCH WALLET BALANCES FROM USERS TABLE
         |--------------------------------------------------------------------------
         */
-        $walletBalances = Wallet::where('user_id', $user->id)
-            ->pluck('balance', 'type')
-            ->toArray();
-
-        // Fallback to zero if a wallet type doesn't exist yet
-        $commissionBalance   = $walletBalances['commission'] ?? 0;
-        $registrationBalance = $walletBalances['registration'] ?? 0;
-        $rankBalance        = $walletBalances['rank'] ?? 0;
-        $shoppingBalance    = $walletBalances['shopping'] ?? 0;
+        $commissionBalance   = $user->commission_wallet_balance ?? 0;
+        $registrationBalance = $user->registration_wallet_balance ?? 0;
+        $rankBalance         = $user->rank_wallet_balance ?? 0;
+        $shoppingBalance     = $user->shopping_wallet_balance ?? 0;
 
         /*
         |--------------------------------------------------------------------------
-        | USER STATISTICS – UPDATED WITH REAL WALLET BALANCES
+        | USER STATISTICS
         |--------------------------------------------------------------------------
         */
         $stats = [
-            'total_pv'              => $user->total_pv ?? 0,
-            'current_pv'           => $user->current_pv ?? 0,
-            // Replace old user-column balances with real wallet balances
-            'commission_balance'   => $commissionBalance,
-            'registration_balance' => $registrationBalance,
-            'rank_balance'        => $rankBalance,
-            'shopping_balance'    => $shoppingBalance,
-            'left_count'          => $user->left_count ?? 0,
-            'right_count'         => $user->right_count ?? 0,
-            'direct_downlines'    => $user->directDownlines()->count(),
-            'total_downlines'     => $this->getTotalDownlines($user),
+            'total_pv'                  => $user->total_pv ?? 0,
+            'current_pv'                => $user->current_pv ?? 0,
+
+            'commission_wallet_balance' => $commissionBalance,
+            'registration_balance'      => $registrationBalance,
+            'rank_balance'              => $rankBalance,
+            'shopping_balance'          => $shoppingBalance,
+
+            'left_count'                => $user->left_count ?? 0,
+            'right_count'               => $user->right_count ?? 0,
+            'direct_downlines'          => $user->directDownlines()->count(),
+            'total_downlines'           => $this->getTotalDownlines($user),
         ];
 
-        // Get recent activities (unchanged)
+        // Get recent activities
         $recent_activities = $this->getRecentActivities($user);
 
         return view('member.dashboard', compact(
@@ -113,7 +107,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Recursively count all downlines (unchanged)
+     * Recursively count all downlines
      */
     private function getTotalDownlines($user)
     {
@@ -127,7 +121,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get recent commissions & wallet transactions (unchanged)
+     * Get recent commissions & wallet transactions
      */
     private function getRecentActivities($user)
     {

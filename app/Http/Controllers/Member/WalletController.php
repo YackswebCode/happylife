@@ -3,70 +3,47 @@
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
 use App\Models\FundingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class WalletController extends Controller
 {
-    /**
-     * Show wallet dashboard (overview of all wallets).
-     */
-    public function index()
-    {
-        $user = Auth::user();
+   /**
+ * Wallet dashboard – now only displays Shopping wallet.
+ */
+public function index()
+{
+    $user = Auth::user();
 
-        $wallets = Wallet::where('user_id', $user->id)
-                        ->get()
-                        ->keyBy('type');
+    // Get or create the shopping wallet
+    $shoppingWallet = $user->shoppingWallet;  // uses accessor that auto-creates
 
-        // Only keep active wallet types (rank removed)
-        $types = ['commission', 'registration', 'shopping'];
-        foreach ($types as $type) {
-            if (!isset($wallets[$type])) {
-                $wallets[$type] = Wallet::create([
-                    'user_id' => $user->id,
-                    'type' => $type,
-                    'balance' => 0,
-                    'locked_balance' => 0,
-                ]);
-            }
-        }
+    // Recent transactions (you may filter to show only shopping wallet transactions if desired)
+    $recentTransactions = WalletTransaction::where('user_id', $user->id)
+                            ->with('wallet')
+                            ->latest()
+                            ->take(10)
+                            ->get();
 
-        // Recent transactions
-        $recentTransactions = WalletTransaction::where('user_id', $user->id)
-                                ->with('wallet')
-                                ->latest()
-                                ->take(10)
-                                ->get();
-
-        // Pending funding requests
-        $pendingRequests = FundingRequest::where('user_id', $user->id)
-                                ->where('status', 'pending')
-                                ->get();
-
-        return view('member.wallet.index', compact('wallets', 'recentTransactions', 'pendingRequests'));
-    }
-
-    /**
-     * Commission wallet details.
-     */
-    public function commission()
-    {
-        $user = Auth::user();
-        $wallet = $this->getOrCreateWallet($user->id, 'commission');
-        $transactions = WalletTransaction::where('wallet_id', $wallet->id)
+    // Pending funding requests (all types, but we can optionally filter by wallet_type)
+    $pendingRequests = FundingRequest::where('user_id', $user->id)
+                        ->pending()
                         ->latest()
-                        ->paginate(20);
+                        ->take(5)
+                        ->get();
 
-        return view('member.wallet.commission', compact('wallet', 'transactions'));
-    }
+    return view('member.wallet.index', compact(
+        'shoppingWallet',
+        'recentTransactions',
+        'pendingRequests'
+    ));
+}
+    
 
     /**
      * Shopping wallet details.
@@ -74,7 +51,7 @@ class WalletController extends Controller
     public function shopping()
     {
         $user = Auth::user();
-        $wallet = $this->getOrCreateWallet($user->id, 'shopping');
+        $wallet = $user->shoppingWallet; // auto-created
         $transactions = WalletTransaction::where('wallet_id', $wallet->id)
                         ->latest()
                         ->paginate(20);
@@ -83,31 +60,35 @@ class WalletController extends Controller
     }
 
     /**
-     * All transactions across all wallets.
+     * All transactions (filterable).
      */
-    public function transactions()
+    public function transactions(Request $request)
     {
         $user = Auth::user();
-        $transactions = WalletTransaction::where('user_id', $user->id)
-                        ->with('wallet')
-                        ->latest()
-                        ->paginate(30);
+        $query = WalletTransaction::where('user_id', $user->id)
+                    ->with('wallet');
 
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        if ($request->filled('wallet_type')) {
+            $query->whereHas('wallet', fn($q) => $q->where('type', $request->wallet_type));
+        }
+
+        $transactions = $query->latest()->paginate(30);
         return view('member.wallet.transactions', compact('transactions'));
     }
 
     /**
-     * Show funding page (dual gateway UI).
+     * Show funding page – now exclusively for shopping wallet.
      */
     public function funding()
     {
-        $user = Auth::user();
-        $registrationWallet = $this->getOrCreateWallet($user->id, 'registration');
-        return view('member.wallet.funding', compact('registrationWallet'));
+        return view('member.wallet.funding');
     }
 
     /**
-     * Initialize Paystack payment.
+     * INIT PAYSTACK – (optional, used by other flows)
      */
     public function initPaystack(Request $request)
     {
@@ -115,34 +96,21 @@ class WalletController extends Controller
             'amount' => 'required|numeric|min:100',
         ]);
 
-        $user = Auth::user();
-        $amount = $request->amount * 100; // kobo
-        $reference = 'FUND-' . strtoupper(Str::random(20));
-
-        $paystackSecret = config('services.paystack.secret');
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $paystackSecret,
-            'Content-Type' => 'application/json',
-        ])->post('https://api.paystack.co/transaction/initialize', [
-            'email' => $user->email,
-            'amount' => $amount,
-            'reference' => $reference,
-            'callback_url' => route('member.wallet.index'), // ✅ Direct to wallet dashboard
-            'metadata' => [
-                'user_id' => $user->id,
-                'wallet_type' => 'registration',
+        // This method might be called from elsewhere; we ensure wallet_type = shopping
+        return response()->json([
+            'public_key' => config('services.paystack.public_key'),
+            'email'      => Auth::user()->email,
+            'amount'     => $request->amount * 100,
+            'reference'  => 'FUND-'.uniqid().'-'.Auth::id(),
+            'metadata'   => [
+                'user_id'     => Auth::id(),
+                'wallet_type' => 'shopping',
             ],
         ]);
-
-        if ($response->successful() && $response['status']) {
-            return redirect($response['data']['authorization_url']);
-        }
-
-        return back()->with('error', 'Unable to initialize Paystack payment.');
     }
 
     /**
-     * Initialize Flutterwave payment.
+     * INIT FLUTTERWAVE – (optional)
      */
     public function initFlutterwave(Request $request)
     {
@@ -150,143 +118,152 @@ class WalletController extends Controller
             'amount' => 'required|numeric|min:100',
         ]);
 
-        $user = Auth::user();
-        $amount = $request->amount;
-        $reference = 'FUND-' . strtoupper(Str::random(20));
-
-        $flutterwaveSecret = config('services.flutterwave.secret');
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $flutterwaveSecret,
-            'Content-Type' => 'application/json',
-        ])->post('https://api.flutterwave.com/v3/payments', [
-            'tx_ref' => $reference,
-            'amount' => $amount,
-            'currency' => 'NGN',
-            'redirect_url' => route('member.wallet.index'), // ✅ Direct to wallet dashboard
-            'customer' => [
-                'email' => $user->email,
-                'name' => $user->name,
-            ],
-            'customizations' => [
-                'title' => 'Fund Registration Wallet',
-                'description' => 'Add funds to your Happylife registration wallet',
-                'logo' => asset('images/logo.png'),
-            ],
-            'meta' => [
-                'user_id' => $user->id,
-                'wallet_type' => 'registration',
+        return response()->json([
+            'public_key'    => config('services.flutterwave.public_key'),
+            'tx_ref'        => 'FUND-'.uniqid().'-'.Auth::id(),
+            'amount'        => $request->amount,
+            'currency'      => 'NGN',
+            'customer'      => ['email' => Auth::user()->email, 'name' => Auth::user()->name],
+            'meta'          => ['user_id' => Auth::id(), 'wallet_type' => 'shopping'],
+            'customizations'=> [
+                'title'       => 'Fund Shopping Wallet',
+                'description' => 'Add money to shopping wallet',
+                'logo'        => asset('images/logo.png'),
             ],
         ]);
-
-        if ($response->successful() && $response['status'] === 'success') {
-            return redirect($response['data']['link']);
-        }
-
-        return back()->with('error', 'Unable to initialize Flutterwave payment.');
     }
 
-    /**
-     * ✅ Process successful payment from frontend callback.
-     * No gateway verification – trusts the JS callback.
-     */
-    public function paymentSuccess(Request $request)
-    {
-        $request->validate([
-            'reference' => 'required|string',
-            'amount'    => 'required|numeric|min:100',
-            'gateway'   => 'required|in:paystack,flutterwave',
-        ]);
+/**
+ * ✅ PAYMENT SUCCESS – called via AJAX after gateway popup.
+ * Credits the SHOPPING wallet directly, no gateway verification.
+ */
+public function paymentSuccess(Request $request)
+{
+    $request->validate([
+        'reference'   => 'required|string',
+        'amount'      => 'required|numeric|min:0.01',
+        'gateway'     => 'required|in:paystack,flutterwave',
+        'wallet_type' => 'sometimes|in:shopping', // enforce shopping
+    ]);
 
-        $user = Auth::user();
-        $reference = $request->reference;
-        $amount = $request->amount;
-        $gateway = $request->gateway;
+    $user = Auth::user();
+    $amount = $request->amount;
+    $walletType = 'shopping';
 
-        // Prevent duplicate processing
-        $exists = FundingRequest::where('transaction_id', $reference)->exists();
-        if ($exists) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This transaction has already been processed.'
-            ], 409);
+    DB::beginTransaction();
+    try {
+        // ✅ FIX: Use the accessor/property, NOT the relationship method
+        $wallet = $user->shoppingWallet;   // <-- this auto-creates if missing
+
+        // If for some reason $wallet is still null, create it manually
+        if (!$wallet) {
+            $wallet = $user->wallets()->create([
+                'type'           => 'shopping',
+                'balance'        => 0,
+                'locked_balance' => 0,
+            ]);
         }
 
-        DB::transaction(function () use ($user, $amount, $reference, $gateway) {
-            // Credit registration wallet
-            $wallet = $this->getOrCreateWallet($user->id, 'registration');
-            $wallet->balance += $amount;
-            $wallet->save();
+        // Credit the wallet
+        $wallet->balance += $amount;
+        $wallet->save();
 
-            // Create transaction record
-            WalletTransaction::create([
-                'wallet_id'   => $wallet->id,
-                'user_id'     => $user->id,
-                'type'        => WalletTransaction::TYPE_CREDIT,
-                'amount'      => $amount,
-                'description' => "Wallet funding via {$gateway}",
-                'reference'   => $reference,
-                'status'      => WalletTransaction::STATUS_COMPLETED,
-                'metadata'    => ['gateway' => $gateway],
-            ]);
+        // Create transaction record
+        WalletTransaction::create([
+            'wallet_id'   => $wallet->id,
+            'user_id'     => $user->id,
+            'type'        => 'credit',
+            'amount'      => $amount,
+            'description' => 'Online funding via ' . ucfirst($request->gateway),
+            'reference'   => $request->reference,
+            'status'      => 'completed',
+            'metadata'    => json_encode([
+                'gateway'     => $request->gateway,
+                'wallet_type' => $walletType,
+            ]),
+        ]);
 
-            // Log funding request (auto-approved)
-            FundingRequest::create([
-                'user_id'         => $user->id,
-                'amount'          => $amount,
-                'payment_method'  => 'online',
-                'transaction_id'  => $reference,
-                'status'          => 'approved',
-                'approved_at'     => now(),
-            ]);
-        });
+        // ✅ Ensure the funding_requests table has a 'wallet_type' column
+        FundingRequest::create([
+            'user_id'        => $user->id,
+            'wallet_type'    => $walletType,      // requires migration
+            'amount'         => $amount,
+            'payment_method' => $request->gateway,
+            'transaction_id' => $request->reference,
+            'status'         => 'approved',       // instant approval for online
+            'approved_at'    => now(),
+        ]);
+
+        DB::commit();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Wallet funded successfully!',
-            'redirect' => route('member.wallet.index')
+            'success'  => true,
+            'message'  => 'Wallet funded successfully! ₦' . number_format($amount, 2) . ' added.',
+            'redirect' => route('member.wallet.index'),
         ]);
+
+    } catch (\Illuminate\Database\QueryException $e) {
+        DB::rollBack();
+        // Check for duplicate transaction reference
+        if ($e->errorInfo[1] == 1062) { // MySQL duplicate entry code
+            Log::warning('Duplicate transaction reference: ' . $request->reference);
+            return response()->json([
+                'success' => false,
+                'message' => 'This transaction reference has already been used.',
+            ], 422);
+        }
+        // Check for missing column
+        if (str_contains($e->getMessage(), 'Unknown column')) {
+            Log::critical('Missing wallet_type column in funding_requests table. Run migration.');
+            return response()->json([
+                'success' => false,
+                'message' => 'System configuration error. Please contact support.',
+            ], 500);
+        }
+        throw $e; // rethrow if not handled
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Payment Success Error: ' . $e->getMessage(), [
+            'user_id' => $user->id,
+            'trace'   => $e->getTraceAsString()
+        ]);
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to credit wallet. Please contact support.',
+        ], 500);
     }
+}
 
     /**
-     * Submit manual funding request (bank transfer with proof).
+     * ✅ BANK TRANSFER REQUEST – store manual funding request for shopping wallet.
      */
     public function requestFunding(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:100',
-            'payment_method' => 'required|in:bank_transfer',
+            'amount'         => 'required|numeric|min:100',
             'transaction_id' => 'required|string|unique:funding_requests,transaction_id',
-            'proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'notes' => 'nullable|string|max:500',
+            'proof'          => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'notes'          => 'nullable|string',
+            'wallet_type'    => 'required|in:shopping', // must be shopping
         ]);
 
         $user = Auth::user();
 
-        // Upload proof
-        $path = $request->file('proof')->store('funding-proofs', 'public');
+        // Store proof file
+        $proofPath = $request->file('proof')->store('funding-proofs', 'public');
 
         FundingRequest::create([
-            'user_id' => $user->id,
-            'amount' => $request->amount,
-            'payment_method' => $request->payment_method,
+            'user_id'        => $user->id,
+            'wallet_type'    => $request->wallet_type, // 'shopping'
+            'amount'         => $request->amount,
+            'payment_method' => 'bank_transfer',
             'transaction_id' => $request->transaction_id,
-            'proof' => $path,
-            'notes' => $request->notes,
-            'status' => 'pending',
+            'proof'          => $proofPath,
+            'notes'          => $request->notes,
+            'status'         => 'pending',
         ]);
 
-        return redirect()->route('member.wallet.index')
-            ->with('success', 'Funding request submitted successfully. Awaiting admin approval.');
-    }
-
-    /**
-     * Helper: get or create wallet by type.
-     */
-    private function getOrCreateWallet($userId, $type)
-    {
-        return Wallet::firstOrCreate(
-            ['user_id' => $userId, 'type' => $type],
-            ['balance' => 0, 'locked_balance' => 0]
-        );
+        return redirect()->route('member.wallet.funding')
+            ->with('success', 'Funding request submitted successfully! It will be reviewed within 24 hours.');
     }
 }

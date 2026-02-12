@@ -8,8 +8,8 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 text-dark-gray">My Wallets</h1>
-            <p class="text-muted">Manage your funds and transactions</p>
+            <h1 class="h3 text-dark-gray">My Shopping Wallet</h1>
+            <p class="text-muted">Manage your shopping funds and transactions</p>
         </div>
         <a href="{{ route('member.wallet.funding') }}" class="btn btn-red rounded-pill px-4 py-2 shadow-sm">
             <i class="bi bi-plus-circle me-2"></i> Fund Wallet
@@ -17,65 +17,48 @@
     </div>
 
     @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
+        <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-@if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-    <!-- Wallet Cards Grid -->
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <!-- Single Shopping Wallet Card -->
     <div class="row g-4 mb-5">
-        @php
-            $walletTypes = [
-                'commission'   => ['name' => 'Commission', 'icon' => 'bi-cash-stack', 'color' => 'bg-teal-blue'],
-                'registration' => ['name' => 'Registration', 'icon' => 'bi-person-plus', 'color' => 'bg-soft-cyan'],
-                'shopping'     => ['name' => 'Shopping',     'icon' => 'bi-cart',      'color' => 'bg-dark-gray'],
-            ];
-        @endphp
-
-        @foreach($walletTypes as $key => $info)
-            @php $wallet = $wallets[$key] ?? null; @endphp
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm rounded-4 {{ $info['color'] }} text-white">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <p class="small opacity-75 mb-1">{{ $info['name'] }} Wallet</p>
-                                <h3 class="display-6 fw-bold">₦{{ number_format($wallet->balance ?? 0, 2) }}</h3>
-                                <span class="badge bg-white text-dark bg-opacity-25">
-                                    Locked: ₦{{ number_format($wallet->locked_balance ?? 0, 2) }}
-                                </span>
-                            </div>
-                            <div class="bg-white bg-opacity-25 p-3 rounded-circle">
-                                <i class="bi {{ $info['icon'] }} fs-4"></i>
-                            </div>
+        @php $wallet = $shoppingWallet ?? null; @endphp
+        <div class="col-md-6 col-lg-12">
+            <div class="card h-100 border-0 shadow-sm rounded-4 bg-dark-gray text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="small opacity-75 mb-1">Shopping Wallet</p>
+                            <h3 class="display-6 fw-bold">₦{{ number_format($wallet->balance ?? 0, 2) }}</h3>
+                            <span class="badge bg-white text-dark bg-opacity-25">
+                                Locked: ₦{{ number_format($wallet->locked_balance ?? 0, 2) }}
+                            </span>
                         </div>
-
-                        {{-- CRITICAL FIX: Registration wallet links to funding, not a non‑existent detail page --}}
-                        @if($key === 'registration')
-                            <a href="{{ route('member.wallet.funding') }}" 
-                               class="text-white text-decoration-none small fw-semibold mt-3 d-inline-block">
-                                Fund Wallet <i class="bi bi-arrow-right ms-1"></i>
-                            </a>
-                        @else
-                            <a href="{{ route('member.wallet.' . $key) }}" 
-                               class="text-white text-decoration-none small fw-semibold mt-3 d-inline-block">
-                                View Details <i class="bi bi-arrow-right ms-1"></i>
-                            </a>
-                        @endif
+                        <div class="bg-white bg-opacity-25 p-3 rounded-circle">
+                            <i class="bi bi-cart fs-4"></i>
+                        </div>
                     </div>
+
+                    <a href="{{ route('member.wallet.shopping') }}" 
+                       class="text-white text-decoration-none small fw-semibold mt-3 d-inline-block">
+                        View Details <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
                 </div>
             </div>
-        @endforeach
+        </div>
     </div>
 
-    <!-- Recent Transactions & Pending Requests -->
+    <!-- Recent Transactions & Pending Funding (unchanged) -->
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-4">
@@ -144,7 +127,7 @@
                             <p class="mt-2">No pending requests.</p>
                         </div>
                     @endif
-                    <a href="{{ route('member.wallet.funding') }}" class="btn btn-teal-blue w-100 mt-3 rounded-pill">
+                    <a href="{{ route('member.wallet.funding') }}" class="btn  btn-danger w-100 mt-3 rounded-pill">
                         <i class="bi bi-plus-circle me-2"></i> Make a Deposit
                     </a>
                 </div>

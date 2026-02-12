@@ -152,135 +152,171 @@ class User extends Authenticatable
     }
 
     /**
- * Get the KYC record associated with the user.
- * Typically one-to-one, but we may keep multiple submissions; use latest.
- */
-public function kyc()
-{
-    return $this->hasOne(Kyc::class)->latestOfMany();
-}
-
-/**
- * Get all KYC submissions for the user.
- */
-public function kycs()
-{
-    return $this->hasMany(Kyc::class);
-}
-
-// User.php
-public function leftChild()
-{
-    return $this->hasOne(User::class, 'placement_id', 'id')
-                ->where('placement_position', 'left');
-}
-
-public function rightChild()
-{
-    return $this->hasOne(User::class, 'placement_id', 'id')
-                ->where('placement_position', 'right');
-}
-
-// app/Models/User.php
-
-public function getWalletBalance($type)
-{
-    $wallet = $this->wallets()->where('type', $type)->first();
-    return $wallet ? $wallet->balance : 0;
-}
-
-public function getCommissionWalletAttribute()
-{
-    return $this->getWalletBalance('commission');
-}
-
-public function getRegistrationWalletAttribute()
-{
-    return $this->getWalletBalance('registration');
-}
-
-public function getRankWalletAttribute()
-{
-    return $this->getWalletBalance('rank');
-}
-
-public function getShoppingWalletAttribute()
-{
-    return $this->getWalletBalance('shopping');
-}
-
-// Ensure the relationship exists
-public function wallets()
-{
-    return $this->hasMany(Wallet::class);
-}
-
-// app/Models/User.php
-
-public function orders()
-{
-    return $this->hasMany(Order::class);
-}
-
-
-public function productClaims()
-{
-    return $this->hasMany(ProductClaim::class);
-}
-
-public function hasPendingClaim()
-{
-    return $this->productClaims()->where('status', 'pending')->exists();
-}
-
-public function hasApprovedClaim()
-{
-    return $this->productClaims()->where('status', 'approved')->exists();
-}
-
-public function hasCollectedClaim()
-{
-    return $this->productClaims()->where('status', 'collected')->exists();
-}
-
-
-
-public function upgrades()
-{
-    return $this->hasMany(Upgrade::class);
-}
-
-public function getUpgradeablePackagesAttribute()
-{
-    if (!$this->package) {
-        return collect();
+     * Get the KYC record associated with the user.
+     * Typically one-to-one, but we may keep multiple submissions; use latest.
+     */
+    public function kyc()
+    {
+        return $this->hasOne(Kyc::class)->latestOfMany();
     }
-    return Package::where('order', '>', $this->package->order)
-        ->where('is_active', true)
-        ->orderBy('order')
-        ->get();
-}
-// User.php
 
-public function leftChildren()
-{
-    return $this->hasMany(User::class, 'placement_id', 'id')
-                ->where('placement_position', 'left')
-                ->with(['package', 'rank']); // eager load useful data
-}
+    /**
+     * Get all KYC submissions for the user.
+     */
+    public function kycs()
+    {
+        return $this->hasMany(Kyc::class);
+    }
 
-public function rightChildren()
-{
-    return $this->hasMany(User::class, 'placement_id', 'id')
-                ->where('placement_position', 'right')
-                ->with(['package', 'rank']);
-}
+    // Binary tree children
+    public function leftChild()
+    {
+        return $this->hasOne(User::class, 'placement_id', 'id')
+                    ->where('placement_position', 'left');
+    }
 
-public function children()
-{
-    return $this->hasMany(User::class, 'placement_id', 'id')
-                ->with(['package', 'rank']);
-}
+    public function rightChild()
+    {
+        return $this->hasOne(User::class, 'placement_id', 'id')
+                    ->where('placement_position', 'right');
+    }
 
+    public function leftChildren()
+    {
+        return $this->hasMany(User::class, 'placement_id', 'id')
+                    ->where('placement_position', 'left')
+                    ->with(['package', 'rank']);
+    }
 
+    public function rightChildren()
+    {
+        return $this->hasMany(User::class, 'placement_id', 'id')
+                    ->where('placement_position', 'right')
+                    ->with(['package', 'rank']);
+    }
+
+    public function children()
+    {
+        return $this->hasMany(User::class, 'placement_id', 'id')
+                    ->with(['package', 'rank']);
+    }
+
+    // Wallet relationships and accessors
+    
+    /**
+     * Get all wallets belonging to the user.
+     */
+    public function wallets()
+    {
+        return $this->hasMany(Wallet::class);
+    }
+
+    /**
+     * Get the shopping wallet for the user.
+     */
+    public function shoppingWallet()
+    {
+        return $this->hasOne(Wallet::class)->where('type', 'shopping');
+    }
+
+    /**
+     * Get the balance of a specific wallet type.
+     * Does NOT auto‑create the wallet – returns 0 if not found.
+     *
+     * @param string $type
+     * @return float
+     */
+    public function getWalletBalance($type)
+    {
+        $wallet = $this->wallets()->where('type', $type)->first();
+        return $wallet ? $wallet->balance : 0;
+    }
+
+    /**
+     * Get the commission wallet balance.
+     */
+    public function getCommissionWalletAttribute()
+    {
+        return $this->getWalletBalance('commission');
+    }
+
+    /**
+     * Get the registration wallet balance.
+     */
+    public function getRegistrationWalletAttribute()
+    {
+        return $this->getWalletBalance('registration');
+    }
+
+    /**
+     * Get the rank wallet balance.
+     */
+    public function getRankWalletAttribute()
+    {
+        return $this->getWalletBalance('rank');
+    }
+
+    /**
+     * Get the shopping wallet balance.
+     * AUTO‑CREATES the shopping wallet if it does not exist.
+     *
+     * @return float
+     */
+    public function getShoppingWalletBalanceAttribute()
+    {
+        $wallet = $this->shoppingWallet()->first();
+        if (!$wallet) {
+            $wallet = $this->shoppingWallet()->create([
+                'type'           => 'shopping',
+                'balance'        => 0,
+                'locked_balance' => 0,
+            ]);
+        }
+        return $wallet->balance ?? 0;
+    }
+
+    // Order & Product Claims
+    
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function productClaims()
+    {
+        return $this->hasMany(ProductClaim::class);
+    }
+
+    public function hasPendingClaim()
+    {
+        return $this->productClaims()->where('status', 'pending')->exists();
+    }
+
+    public function hasApprovedClaim()
+    {
+        return $this->productClaims()->where('status', 'approved')->exists();
+    }
+
+    public function hasCollectedClaim()
+    {
+        return $this->productClaims()->where('status', 'collected')->exists();
+    }
+
+    // Package Upgrades
+    
+    public function upgrades()
+    {
+        return $this->hasMany(Upgrade::class);
+    }
+
+    public function getUpgradeablePackagesAttribute()
+    {
+        if (!$this->package) {
+            return collect();
+        }
+        return Package::where('order', '>', $this->package->order)
+            ->where('is_active', true)
+            ->orderBy('order')
+            ->get();
+    }
 }

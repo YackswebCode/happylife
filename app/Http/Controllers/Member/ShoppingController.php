@@ -23,12 +23,10 @@ class ShoppingController extends Controller
         $query = RepurchaseProduct::where('is_active', true)
                     ->with('category');
 
-        // Filter by category
         if ($request->filled('category')) {
             $query->where('category_id', $request->category);
         }
 
-        // Search
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('name', 'like', '%'.$request->search.'%')
@@ -107,7 +105,7 @@ class ShoppingController extends Controller
     }
 
     /**
-     * Add product to cart (AJAX or normal POST).
+     * Add product to cart.
      */
     public function addToCart(Request $request)
     {
@@ -157,6 +155,14 @@ class ShoppingController extends Controller
             Session::put('cart', $cart);
         }
 
+        if ($request->wantsJson()) {
+            $cartTotals = $this->calculateCartTotals();
+            return response()->json(array_merge(
+                ['success' => true],
+                $cartTotals
+            ));
+        }
+
         return redirect()->route('member.shopping.cart')->with('success', 'Cart updated');
     }
 
@@ -177,11 +183,21 @@ class ShoppingController extends Controller
             Session::put('cart', $cart);
         }
 
+        if ($request->wantsJson()) {
+            $cartTotals = $this->calculateCartTotals();
+            return response()->json(array_merge(
+                ['success' => true],
+                $cartTotals
+            ));
+        }
+
         return redirect()->route('member.shopping.cart')->with('success', 'Item removed');
     }
 
     /**
-     * Process checkout – deduct from shopping wallet, add repurchase bonus, create order.
+     * Process checkout – deduct from shopping wallet,
+     * add repurchase bonus to shopping wallet AND to user's commission_wallet_balance,
+     * create order, and update repurchase_bonus_total.
      */
     public function checkout(Request $request)
     {
@@ -213,9 +229,8 @@ class ShoppingController extends Controller
             }
         }
 
-        $shoppingWallet = Wallet::where('user_id', $user->id)
-                            ->where('type', 'shopping')
-                            ->first();
+        // Shopping wallet – auto‑creates if missing
+        $shoppingWallet = $user->shoppingWallet;
 
         if (!$shoppingWallet || $shoppingWallet->balance < $subtotal) {
             return redirect()->route('member.shopping.cart')
@@ -229,9 +244,11 @@ class ShoppingController extends Controller
         DB::beginTransaction();
 
         try {
+            // 1. Deduct purchase amount from shopping wallet
             $shoppingWallet->balance -= $subtotal;
             $shoppingWallet->save();
 
+            // 2. Create order
             $order = Order::create([
                 'user_id'       => $user->id,
                 'order_number'  => 'ORD-' . strtoupper(uniqid()),
@@ -244,9 +261,11 @@ class ShoppingController extends Controller
                 'items'         => json_encode($items),
             ]);
 
+            // 3. Add repurchase bonus to shopping wallet (for future purchases)
             $shoppingWallet->balance += $bonusAmount;
             $shoppingWallet->save();
 
+            // 4. Record debit transaction (purchase)
             WalletTransaction::create([
                 'wallet_id'   => $shoppingWallet->id,
                 'user_id'     => $user->id,
@@ -258,6 +277,7 @@ class ShoppingController extends Controller
                 'metadata'    => json_encode(['order_id' => $order->id]),
             ]);
 
+            // 5. Record credit transaction (bonus)
             WalletTransaction::create([
                 'wallet_id'   => $shoppingWallet->id,
                 'user_id'     => $user->id,
@@ -269,17 +289,78 @@ class ShoppingController extends Controller
                 'metadata'    => json_encode(['order_id' => $order->id]),
             ]);
 
+            // 🆕 6. Update users table: track repurchase bonus total and add to commission wallet balance
+            $user->repurchase_bonus_total += $bonusAmount;
+            $user->commission_wallet_balance += $bonusAmount;
+            $user->save();
+
+            // 7. Clear the cart
             Session::forget('cart');
 
             DB::commit();
 
-            return redirect()->route('member.shopping.index')
-                ->with('success', 'Order placed successfully! You earned ₦' . number_format($bonusAmount, 2) . ' repurchase bonus.');
+            return redirect()->route('member.shopping.receipt', ['order' => $order->id])
+                ->with('success', 'Order placed successfully!')
+                ->with('bonus_earned', $bonusAmount);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Checkout failed: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'cart'    => $cart
+            ]);
             return redirect()->route('member.shopping.cart')
                 ->with('error', 'Checkout failed. Please try again.');
         }
+    }
+
+    /**
+     * Display order receipt.
+     */
+    public function receipt(Order $order)
+    {
+        if ($order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $bonus_earned = session('bonus_earned', 0);
+
+        return view('member.shopping.receipt', compact('order', 'bonus_earned'));
+    }
+
+    /**
+     * Private helper: calculate current cart totals for AJAX responses.
+     */
+    private function calculateCartTotals()
+    {
+        $cart = Session::get('cart', []);
+        $cartCount = array_sum($cart);
+        $subtotal = 0;
+        $bonusEarned = 0;
+        $items = [];
+
+        if (!empty($cart)) {
+            $productIds = array_keys($cart);
+            $products = RepurchaseProduct::whereIn('id', $productIds)->get()->keyBy('id');
+
+            foreach ($cart as $id => $quantity) {
+                if (isset($products[$id])) {
+                    $product = $products[$id];
+                    $subtotal += $product->price * $quantity;
+                    $bonusEarned += $quantity * 250;
+                    $items[] = [
+                        'id'       => $id,
+                        'subtotal' => $product->price * $quantity
+                    ];
+                }
+            }
+        }
+
+        return [
+            'cart_count'   => $cartCount,
+            'subtotal'     => $subtotal,
+            'bonus_earned' => $bonusEarned,
+            'items'        => $items
+        ];
     }
 }

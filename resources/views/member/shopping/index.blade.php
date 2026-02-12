@@ -12,8 +12,8 @@
         </div>
         <div class="d-flex gap-3">
             <a href="{{ route('member.wallet.shopping') }}" class="btn btn-outline-happylife-teal d-flex align-items-center">
-                <span class="me-2">🛒</span> Shopping Wallet: 
-                <span class="fw-bold ms-1">₦{{ number_format(auth()->user()->shopping_wallet_balance ?? 0, 2) }}</span>
+                <span class="me-2">🛒</span> Shopping Wallet:
+                <span class="fw-bold ms-1">₦{{ number_format(auth()->user()->shopping_wallet_balance, 2) }}</span>
             </a>
             <a href="{{ route('member.shopping.cart') }}" class="btn btn-happylife-red d-flex align-items-center position-relative">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -21,7 +21,7 @@
                 </svg>
                 <span class="ms-2">Cart</span>
                 @if(session()->has('cart') && count(session('cart')) > 0)
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark cart-count">
                         {{ count(session('cart')) }}
                     </span>
                 @endif
@@ -35,7 +35,7 @@
             <div class="btn-group flex-wrap" role="group">
                 <a href="{{ route('member.shopping.index') }}" class="btn btn-outline-happylife-teal {{ !request('category') ? 'active' : '' }}">All</a>
                 @foreach($categories ?? [] as $cat)
-                    <a href="{{ route('member.shopping.index', ['category' => $cat->id]) }}" 
+                    <a href="{{ route('member.shopping.index', ['category' => $cat->id]) }}"
                        class="btn btn-outline-happylife-teal {{ request('category') == $cat->id ? 'active' : '' }}">
                         {{ $cat->name }}
                     </a>
@@ -73,10 +73,10 @@
                         </div>
                         <p class="card-text text-secondary small">{{ Str::limit($product->description, 60) }}</p>
                         <div class="mt-auto d-flex gap-2">
-                            <a href="{{ route('member.shopping.product', $product->id) }}" class="btn btn-outline-happylife-teal flex-grow-1">
+                            <a href="{{ route('member.shopping.product', $product->id) }}" class="btn btn-outline-happylife-teal btn-danger flex-grow-1">
                                 View
                             </a>
-                            <button class="btn btn-happylife-red flex-grow-1 add-to-cart" data-id="{{ $product->id }}">
+                            <button class="btn btn-happylife-red flex-grow-1 add-to-cart btn-danger" data-id="{{ $product->id }}">
                                 Add
                             </button>
                         </div>
@@ -106,37 +106,95 @@
 </div>
 
 @push('scripts')
+
 <script>
-    // Simple add-to-cart with Alpine or vanilla JS
-    document.querySelectorAll('.add-to-cart').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const productId = this.dataset.id;
-            fetch('/member/shopping/cart/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ product_id: productId, quantity: 1 })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    // Update cart count badge
-                    const badge = document.querySelector('.btn-happylife-red .badge');
-                    if (badge) badge.textContent = data.cart_count;
-                    else {
-                        const cartBtn = document.querySelector('.btn-happylife-red');
-                        const newBadge = document.createElement('span');
-                        newBadge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark';
-                        newBadge.textContent = data.cart_count;
-                        cartBtn.appendChild(newBadge);
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add to cart functionality
+        document.querySelectorAll('.add-to-cart').forEach(btn => {
+            btn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const productId = this.dataset.id;
+                const button = this;
+                const originalText = button.innerText;
+
+                // Show loading state
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
+
+                try {
+                    const response = await fetch('{{ route("member.shopping.cart.add") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json', // ✅ CRITICAL: tells Laravel to return JSON
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ product_id: productId, quantity: 1 })
+                    });
+
+                    // Check if the response is OK (status 200-299)
+                    if (!response.ok) {
+                        // Try to parse error message from JSON, otherwise use status text
+                        let errorMsg = `HTTP error ${response.status}`;
+                        try {
+                            const errorData = await response.json();
+                            errorMsg = errorData.message || errorMsg;
+                        } catch (e) {
+                            // Not JSON, maybe HTML error page
+                            errorMsg = response.statusText || errorMsg;
+                        }
+                        throw new Error(errorMsg);
                     }
-                    alert('Product added to cart!');
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        updateCartBadge(data.cart_count);
+                        showToast('Product added to cart!', 'success');
+                    } else {
+                        showToast(data.message || 'Failed to add product', 'danger');
+                    }
+                } catch (error) {
+                    console.error('Add to cart error:', error);
+                    showToast(error.message || 'An error occurred', 'danger');
+                } finally {
+                    button.disabled = false;
+                    button.innerText = originalText;
                 }
             });
         });
+
+        // Update cart count badge
+        function updateCartBadge(count) {
+            const cartBtn = document.querySelector('.btn-happylife-red');
+            let badge = cartBtn.querySelector('.cart-count, .badge');
+
+            if (count > 0) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark cart-count';
+                    cartBtn.appendChild(badge);
+                }
+                badge.textContent = count;
+            } else {
+                if (badge) badge.remove();
+            }
+        }
+
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.createElement('div');
+            toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+            toastContainer.style.zIndex = '9999';
+            toastContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            document.body.appendChild(toastContainer);
+            setTimeout(() => toastContainer.remove(), 3000);
+        }
     });
 </script>
 @endpush

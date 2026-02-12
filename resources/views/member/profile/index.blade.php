@@ -162,18 +162,6 @@
         <div class="card-body">
             <div class="list-group list-group-flush">
                 <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
-                    <span>Commission Wallet</span>
-                    <span class="fw-bold text-teal-blue">₦{{ number_format($commissionBalance, 2) }}</span>
-                </div>
-                <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
-                    <span>Registration Wallet</span>
-                    <span class="fw-bold text-teal-blue">₦{{ number_format($registrationBalance, 2) }}</span>
-                </div>
-                <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
-                    <span>Rank Wallet</span>
-                    <span class="fw-bold text-teal-blue">₦{{ number_format($rankBalance, 2) }}</span>
-                </div>
-                <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
                     <span>Shopping Wallet</span>
                     <span class="fw-bold text-teal-blue">₦{{ number_format($shoppingBalance, 2) }}</span>
                 </div>

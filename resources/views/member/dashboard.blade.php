@@ -81,7 +81,7 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <h6 class="stat-label mb-2">COMMISSION BALANCE</h6>
-                        <h3 class="stat-value mb-0 text-teal-blue">₦{{ number_format($stats['commission_balance'], 2) }}</h3>
+                        <h3 class="stat-value mb-0 text-teal-blue">₦{{ number_format($stats['commission_wallet_balance'], 2) }}</h3>
                         <div class="mt-2">
                            <a href="{{ route('member.withdraw.index') }}">
                              <button class="btn btn-sm btn-red">
@@ -205,45 +205,6 @@
             </div>
             <div class="card-body">
                 <div class="list-group list-group-flush">
-                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-3">
-                        <span class="d-flex align-items-center">
-                            <span class="wallet-icon bg-red rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">
-                                <i class="bi bi-cash-stack text-white"></i>
-                            </span>
-                            <span>
-                                <h6 class="mb-0">Commission</h6>
-                                <small class="text-muted">Withdrawable earnings</small>
-                            </span>
-                        </span>
-                        <span class="fw-bold text-teal-blue">₦{{ number_format($stats['commission_balance'], 2) }}</span>
-                    </div>
-                    
-                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-3">
-                        <span class="d-flex align-items-center">
-                            <span class="wallet-icon bg-teal-blue rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">
-                                <i class="bi bi-person-plus text-white"></i>
-                            </span>
-                            <span>
-                                <h6 class="mb-0">Registration</h6>
-                                <small class="text-muted">For new registrations</small>
-                            </span>
-                        </span>
-                        <span class="fw-bold text-teal-blue">₦{{ number_format($stats['registration_balance'], 2) }}</span>
-                    </div>
-                    
-                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-3">
-                        <span class="d-flex align-items-center">
-                            <span class="wallet-icon bg-warning rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">
-                                <i class="bi bi-trophy text-white"></i>
-                            </span>
-                            <span>
-                                <h6 class="mb-0">Rank Awards</h6>
-                                <small class="text-muted">Achievement bonuses</small>
-                            </span>
-                        </span>
-                        <span class="fw-bold text-teal-blue">₦{{ number_format($stats['rank_balance'], 2) }}</span>
-                    </div>
-                    
                     <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-3">
                         <span class="d-flex align-items-center">
                             <span class="wallet-icon bg-info rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">

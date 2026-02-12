@@ -21,9 +21,7 @@ class Wallet extends Model
         'locked_balance' => 'float'
     ];
 
-    const TYPE_COMMISSION = 'commission';
-    const TYPE_REGISTRATION = 'registration';
-    const TYPE_RANK = 'rank';
+   
     const TYPE_SHOPPING = 'shopping';
 
     // Relationships

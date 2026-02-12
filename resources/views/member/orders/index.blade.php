@@ -10,7 +10,7 @@
             <h1 class="h2 fw-bold text-happylife-dark">My Orders</h1>
             <p class="text-secondary">View your order history and status</p>
         </div>
-        <a href="{{ route('member.shopping.index') }}" class="btn btn-happylife-red">
+        <a href="{{ route('member.shopping.index') }}" class="btn btn-danger btn-happylife-red">
             <i class="bi bi-cart-plus me-2"></i> Continue Shopping
         </a>
     </div>
@@ -74,7 +74,7 @@
                                     <span class="badge {{ $color }}">{{ ucfirst($order->status) }}</span>
                                 </td>
                                 <td class="text-end pe-3">
-                                    <a href="{{ route('member.orders.show', $order) }}" class="btn btn-sm btn-outline-happylife-teal">
+                                    <a href="{{ route('member.orders.show', $order) }}" class="btn btn-danger btn-sm btn-outline-happylife-teal">
                                         <i class="bi bi-eye me-1"></i> View
                                     </a>
                                 </td>
@@ -98,7 +98,7 @@
                 </svg>
                 <h4 class="mt-3">No orders yet</h4>
                 <p>You haven't placed any orders. Start shopping now!</p>
-                <a href="{{ route('member.shopping.index') }}" class="btn btn-happylife-red mt-3 px-5 py-3">
+                <a href="{{ route('member.shopping.index') }}" class="btn btn-danger btn-happylife-red mt-3 px-5 py-3">
                     <i class="bi bi-cart me-2"></i> Shop Now
                 </a>
             </div>

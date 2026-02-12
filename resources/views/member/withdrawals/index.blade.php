@@ -91,7 +91,7 @@
                             </div>
 
                             <div class="col-12 mt-4">
-                                <button type="submit" class="btn btn-happylife-red btn-lg w-100 py-3">
+                                <button type="submit" class="btn btn-danger btn-happylife-red btn-lg w-100 py-3">
                                     <i class="bi bi-send-check me-2"></i> Submit Withdrawal Request
                                 </button>
                             </div>
@@ -133,7 +133,7 @@
                         @endforeach
                     </div>
                     <div class="mt-3 text-center">
-                        <a href="{{ route('member.withdraw.history') }}" class="btn btn-sm btn-outline-happylife-teal">View All</a>
+                        <a href="{{ route('member.withdraw.history') }}" class="btn btn-danger btn-sm btn-outline-happylife-teal">View All</a>
                     </div>
                 @else
                     <div class="text-center py-4 text-secondary">

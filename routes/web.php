@@ -107,6 +107,9 @@ Route::middleware(['auth', 'verified'])
         // Route::get('flutterwave/verify', ...) – DELETED
     });
 
+ Route::get('/shopping/receipt/{order}', [App\Http\Controllers\Member\ShoppingController::class, 'receipt'])
+    ->name('member.shopping.receipt')
+    ->middleware('auth');
 /*
 |--------------------------------------------------------------------------
 | EXTERNAL ROUTE FILES
