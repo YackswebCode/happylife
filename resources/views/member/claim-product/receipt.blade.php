@@ -24,6 +24,23 @@
                     <div class="border-top border-2 border-happylife-red mx-auto" style="width: 80px;"></div>
                 </div>
 
+                <!-- PRODUCT TO COLLECT – Highlighted -->
+                <div class="bg-happylife-red bg-opacity-10 p-3 rounded-3 mb-4 d-flex align-items-center">
+                    <div class="bg-happylife-red rounded-circle p-2 me-3">
+                        <i class="bi bi-box-seam fs-3 text-white"></i>
+                    </div>
+                    <div>
+                        <span class="badge bg-happylife-red mb-1">PRODUCT TO COLLECT</span>
+                        <h4 class="fw-bold text-happylife-dark mb-0">{{ $claim->product->name }}</h4>
+                        <small class="text-secondary d-block mt-1">
+                            <strong>Entitlement:</strong> 
+                            {{ $claim->product->package->product_entitlement ?? '—' }}
+                        </small>
+                        <small class="text-secondary">PV: {{ $claim->product->pv }} · Retail: ₦{{ number_format($claim->product->price, 2) }}</small>
+                    </div>
+                </div>
+
+                <!-- Claim & Member Info -->
                 <div class="row g-3">
                     <div class="col-6">
                         <small class="text-secondary d-block">Claim Number</small>
@@ -53,25 +70,9 @@
 
                 <hr class="my-4">
 
-                <h5 class="fw-bold text-happylife-dark mb-3">Product Details</h5>
-                <div class="row g-3">
-                    <div class="col-6">
-                        <small class="text-secondary d-block">Product Name</small>
-                        <span class="fw-bold">{{ $claim->product->name }}</span>
-                    </div>
-                    <div class="col-6">
-                        <small class="text-secondary d-block">PV Value</small>
-                        <span class="fw-bold">{{ $claim->product->pv }} PV</span>
-                    </div>
-                    <div class="col-6">
-                        <small class="text-secondary d-block">Retail Price</small>
-                        <span class="fw-bold">₦{{ number_format($claim->product->price, 2) }}</span>
-                    </div>
-                </div>
-
-                <hr class="my-4">
-
-                <h5 class="fw-bold text-happylife-dark mb-3">Pickup Information</h5>
+                <h5 class="fw-bold text-happylife-dark mb-3">
+                    <i class="bi bi-geo-alt-fill text-happylife-red me-2"></i>Pickup Information
+                </h5>
                 <div class="row g-3">
                     <div class="col-12">
                         <small class="text-secondary d-block">Pickup Center</small>
@@ -97,6 +98,7 @@
 
                 <hr class="my-4">
 
+                <!-- Receipt footer -->
                 <div class="text-center text-muted small">
                     <p>This receipt must be presented at the pickup center to collect your product.</p>
                     <p class="mb-0">Generated on {{ now()->format('F d, Y h:i A') }}</p>

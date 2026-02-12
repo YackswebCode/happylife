@@ -18,20 +18,19 @@ class RankController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         // Get all active ranks, ordered by level
         $ranks = Rank::where('is_active', true)
                     ->orderBy('level')
                     ->get();
-        
+
         // Current rank of the user
         $currentRank = $user->rank;
-        
+
         // Determine next rank (if any)
         $nextRank = null;
         $progress = 0;
-        $requiredPv = 0;
-        
+
         if ($currentRank) {
             $nextRank = $currentRank->nextRank();
         } else {
@@ -40,28 +39,28 @@ class RankController extends Controller
                             ->where('is_active', true)
                             ->first();
         }
-        
+
         // Calculate progress towards next rank
         if ($nextRank) {
             $requiredPv = $nextRank->required_pv;
-            $progress = $user->total_pv >= $requiredPv 
-                        ? 100 
-                        : round(($user->total_pv / $requiredPv) * 100, 2);
+            $progress = ($requiredPv > 0)
+                ? round(($user->total_pv / $requiredPv) * 100, 2)
+                : 0;
+            $progress = min($progress, 100); // cap at 100%
         }
-        
+
         // Check if user is eligible to claim the next rank
         $canClaim = false;
         if ($nextRank) {
-            // User must have enough PV AND not already have this rank
-            $canClaim = $user->total_pv >= $nextRank->required_pv 
+            $canClaim = $user->total_pv >= $nextRank->required_pv
                         && (!$currentRank || $currentRank->level < $nextRank->level);
         }
-        
+
         return view('member.ranks.index', compact(
-            'user', 'ranks', 'currentRank', 'nextRank', 'progress', 'requiredPv', 'canClaim'
+            'user', 'ranks', 'currentRank', 'nextRank', 'progress', 'canClaim'
         ));
     }
-    
+
     /**
      * Claim the achieved rank and receive rewards.
      */
@@ -71,8 +70,8 @@ class RankController extends Controller
 
         // Determine the next rank to claim
         $currentRank = $user->rank;
-        $nextRank = $currentRank 
-                    ? $currentRank->nextRank() 
+        $nextRank = $currentRank
+                    ? $currentRank->nextRank()
                     : Rank::where('level', 1)->where('is_active', true)->first();
 
         if (!$nextRank) {
@@ -96,15 +95,16 @@ class RankController extends Controller
         DB::transaction(function () use ($user, $nextRank, $reward) {
             // 1. Update user's rank and bonus totals
             $user->rank_id = $nextRank->id;
-            $user->rank_bonus_total = ($user->rank_bonus_total ?? 0) + $reward;
-            $user->commission_wallet_balance = ($user->commission_wallet_balance ?? 0) + $reward;
+            $user->rank_bonus_total += $reward;          // Lifetime rank bonus tracker
+            $user->commission_wallet_balance += $reward; // Withdrawable balance (cached)
             $user->save();
 
             // 2. Get or create the user's COMMISSION wallet
+            //    Use string 'commission' – the constant is NOT defined in your Wallet model
             $commissionWallet = Wallet::firstOrCreate(
                 [
                     'user_id' => $user->id,
-                    'type'    => Wallet::TYPE_COMMISSION,
+                    'type'    => 'commission',           // ✅ Fixed: use plain string
                 ],
                 [
                     'balance'        => 0,

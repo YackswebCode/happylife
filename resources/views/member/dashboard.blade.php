@@ -119,8 +119,24 @@
             </div>
         </div>
     </div>
-    
     <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="stat-label mb-2">WALLET BALANCE</h6>
+                        <div class="mt-2">
+                             <span class="fw-bold text-teal-blue">₦{{ number_format($stats['shopping_balance'], 2) }}</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon text-success opacity-75">
+                           <i class="bi bi-wallet"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        <div class="col-xl-12 col-md-12 mb-4">
         <div class="card stat-card border-0 h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
@@ -196,32 +212,6 @@
     </div>
 </div>
 
-<div class="row">
-    <!-- Wallet Summary -->
-    <div class="col-lg-12 mb-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-0 py-3">
-                <h5 class="mb-0 text-dark-gray"><i class="bi bi-wallet2 text-teal-blue me-2"></i>Wallet Summary</h5>
-            </div>
-            <div class="card-body">
-                <div class="list-group list-group-flush">
-                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-3">
-                        <span class="d-flex align-items-center">
-                            <span class="wallet-icon bg-info rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">
-                                <i class="bi bi-cart text-white"></i>
-                            </span>
-                            <span>
-                                <h6 class="mb-0">Shopping</h6>
-                                <small class="text-muted">For repurchases</small>
-                            </span>
-                        </span>
-                        <span class="fw-bold text-teal-blue">₦{{ number_format($stats['shopping_balance'], 2) }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Network PV Statistics -->
 <div class="row mb-4">

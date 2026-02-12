@@ -28,8 +28,8 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-header bg-white border-0 py-3">
-                    <h4 class="mb-0 text-dark-gray">Fund Your Shopping Wallet</h4>
-                    <p class="text-muted mb-0">Add money to your shopping wallet to purchase products</p>
+                    <h4 class="mb-0 text-dark-gray">Fund Your Wallet</h4>
+                    <p class="text-muted mb-0">Add money to your wallet to purchase products</p>
                 </div>
                 <div class="card-body p-4">
                     <!-- Payment Method Tabs -->

@@ -8,8 +8,8 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 text-dark-gray">My Shopping Wallet</h1>
-            <p class="text-muted">Manage your shopping funds and transactions</p>
+            <h1 class="h3 text-dark-gray">My Wallet</h1>
+            <p class="text-muted">Manage your funds and transactions</p>
         </div>
         <a href="{{ route('member.wallet.funding') }}" class="btn btn-red rounded-pill px-4 py-2 shadow-sm">
             <i class="bi bi-plus-circle me-2"></i> Fund Wallet
@@ -38,7 +38,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="small opacity-75 mb-1">Shopping Wallet</p>
+                            <p class="small opacity-75 mb-1">Wallet Funding</p>
                             <h3 class="display-6 fw-bold">₦{{ number_format($wallet->balance ?? 0, 2) }}</h3>
                             <span class="badge bg-white text-dark bg-opacity-25">
                                 Locked: ₦{{ number_format($wallet->locked_balance ?? 0, 2) }}

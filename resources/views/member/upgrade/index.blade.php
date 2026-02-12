@@ -15,6 +15,40 @@
         </a>
     </div>
 
+    <!-- ========== SESSION MESSAGES ========== -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="bi bi-check-circle-fill me-2 fs-5"></i> 
+            <div class="flex-grow-1">{{ session('success') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i> 
+            <div class="flex-grow-1">{{ session('error') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('warning'))
+        <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i> 
+            <div class="flex-grow-1">{{ session('warning') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('info'))
+        <div class="alert alert-info alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="bi bi-info-circle-fill me-2 fs-5"></i> 
+            <div class="flex-grow-1">{{ session('info') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    <!-- ========== END SESSION MESSAGES ========== -->
+
     <!-- Current Package Card -->
     <div class="card product-card p-4 mb-4 bg-gradient-light">
         <div class="row align-items-center">
@@ -42,11 +76,11 @@
         </div>
     </div>
 
-    <!-- Wallet Balance Alert -->
+    <!-- Wallet Balance Alert (UPDATED to SHOPPING wallet) -->
     <div class="alert alert-info d-flex align-items-center mb-4">
         <i class="bi bi-wallet2 fs-4 me-3"></i>
         <div>
-            <strong>Commission Wallet Balance:</strong>
+            <strong>Wallet Balance:</strong>
             <span class="fw-bold fs-5 ms-2 text-happylife-red">₦{{ number_format($walletBalance, 2) }}</span>
             <span class="ms-3 text-secondary">This will be used to pay the upgrade difference.</span>
         </div>

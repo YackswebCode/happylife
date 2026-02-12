@@ -12,9 +12,43 @@
         </div>
     </div>
 
+    <!-- ========== SESSION MESSAGES ========== -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+            <div class="flex-grow-1">{{ session('success') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+            <div class="flex-grow-1">{{ session('error') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('warning'))
+        <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i>
+            <div class="flex-grow-1">{{ session('warning') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('info'))
+        <div class="alert alert-info alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+            <div class="flex-grow-1">{{ session('info') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    <!-- ========== END SESSION MESSAGES ========== -->
+
     <div class="row g-4">
-        @if($claim)
-            <!-- Already claimed – show status and receipt -->
+        @if(isset($claim) && $claim)
+            <!-- ========== ACTIVE CLAIM (pending/approved/collected) ========== -->
             <div class="col-lg-8">
                 <div class="card product-card p-4">
                     <div class="d-flex align-items-center mb-4">
@@ -48,6 +82,7 @@
                                 @endif
                             </div>
                         </div>
+                        @if($claim->pickupCenter)
                         <div class="col-12">
                             <div class="bg-light p-3 rounded">
                                 <small class="text-secondary d-block">Pickup Center</small>
@@ -56,6 +91,7 @@
                                 <small>Contact: {{ $claim->pickupCenter->contact_person }} ({{ $claim->pickupCenter->contact_phone }})</small>
                             </div>
                         </div>
+                        @endif
                     </div>
 
                     <div class="mt-4 d-flex gap-3">
@@ -88,7 +124,7 @@
                 </div>
             </div>
         @else
-            <!-- No claim yet – show form -->
+            <!-- ========== NO ACTIVE CLAIM – SHOW FORM ========== -->
             <div class="col-lg-8">
                 <div class="card product-card p-4">
                     <div class="d-flex align-items-center mb-4">
@@ -100,6 +136,17 @@
                             <p class="text-secondary mb-0">Package value: ₦{{ number_format($product->price, 2) }} · PV: {{ $product->pv }}</p>
                         </div>
                     </div>
+
+                    @if(isset($lastRejectedClaim) && $lastRejectedClaim)
+                        <div class="alert alert-warning mb-4">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Previous claim was rejected.</strong><br>
+                            @if($lastRejectedClaim->admin_notes)
+                                <small>Reason: {{ $lastRejectedClaim->admin_notes }}</small><br>
+                            @endif
+                            <small>You can now submit a new claim with a different pickup center.</small>
+                        </div>
+                    @endif
 
                     <form action="{{ route('member.claim-product.store') }}" method="POST">
                         @csrf

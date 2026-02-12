@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Member/ClaimProductController.php
 
 namespace App\Http\Controllers\Member;
 
@@ -15,74 +14,89 @@ use Illuminate\Support\Str;
 class ClaimProductController extends Controller
 {
     /**
-     * Show claim product page – either pending claim or claim form.
+     * Show claim product page – active claim OR claim form.
      */
     public function index()
     {
         $user = Auth::user();
 
-        // Check if user has a product to claim (registered with a product)
-       if (!$user->product_id) {
+        // No product assigned to user
+        if (!$user->product_id) {
             return view('member.claim-product.no-product', [
                 'message' => 'You do not have any product to claim. Please contact support.'
             ]);
         }
 
-        // Check if user already has a pending or approved claim for this product
-        $existingClaim = ProductClaim::where('user_id', $user->id)
+        // Check for ACTIVE claim (pending, approved, collected)
+        $activeClaim = ProductClaim::where('user_id', $user->id)
             ->where('product_id', $user->product_id)
+            ->whereIn('status', ['pending', 'approved', 'collected'])
             ->first();
 
-        if ($existingClaim) {
-            // Show claim status and receipt button
+        // If active claim exists → show its status
+        if ($activeClaim) {
             return view('member.claim-product.index', [
-                'claim'   => $existingClaim,
+                'claim'   => $activeClaim,
                 'product' => $user->product,
             ]);
         }
 
-        // No claim yet – show claim form with pickup centers
+        // ===== NO ACTIVE CLAIM =====
+        // Check if there is a REJECTED/CANCELLED claim (for notification only)
+        $lastRejectedClaim = ProductClaim::where('user_id', $user->id)
+            ->where('product_id', $user->product_id)
+            ->whereIn('status', ['rejected', 'cancelled'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Load all active pickup centers
         $pickupCenters = PickupCenter::where('is_active', true)
             ->with('state')
             ->orderBy('state_id')
             ->get();
 
         return view('member.claim-product.index', [
-            'product'        => $user->product,
-            'pickupCenters'  => $pickupCenters,
-            'claim'          => null,
+            'product'            => $user->product,
+            'pickupCenters'      => $pickupCenters,
+            'claim'             => null,
+            'lastRejectedClaim' => $lastRejectedClaim, // for rejection notice
         ]);
     }
 
     /**
-     * Submit a product claim.
+     * Submit a new product claim.
      */
     public function store(Request $request)
     {
         $user = Auth::user();
 
-        // Validate
         $request->validate([
             'pickup_center_id' => 'required|exists:pickup_centers,id',
         ]);
 
-        // Ensure user has a product and no existing claim
         if (!$user->product_id) {
             return back()->with('error', 'No product associated with your account.');
         }
 
-        $existingClaim = ProductClaim::where('user_id', $user->id)
+        // Check for ACTIVE claim – prevent new claim if one is already pending/approved/collected
+        $activeClaim = ProductClaim::where('user_id', $user->id)
             ->where('product_id', $user->product_id)
+            ->whereIn('status', ['pending', 'approved', 'collected'])
             ->exists();
 
-        if ($existingClaim) {
-            return back()->with('error', 'You have already claimed this product.');
+        if ($activeClaim) {
+            return back()->with('error', 'You already have an active claim for this product.');
         }
 
         // Generate unique claim number
-        $claimNumber = 'CLM-' . date('Ymd') . '-' . str_pad(ProductClaim::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+        $claimNumber = 'CLM-' . date('Ymd') . '-' . str_pad(
+            ProductClaim::whereDate('created_at', today())->count() + 1,
+            4,
+            '0',
+            STR_PAD_LEFT
+        );
 
-        // Fetch pickup center details for snapshot
+        // Get pickup center with state
         $pickupCenter = PickupCenter::with('state')->findOrFail($request->pickup_center_id);
 
         DB::beginTransaction();
@@ -102,13 +116,13 @@ class ClaimProductController extends Controller
                         'pv'    => $user->product->pv,
                     ],
                     'pickup_center' => [
-                        'id'        => $pickupCenter->id,
-                        'name'      => $pickupCenter->name,
-                        'address'   => $pickupCenter->address,
-                        'contact_person' => $pickupCenter->contact_person,
-                        'contact_phone'  => $pickupCenter->contact_phone,
+                        'id'              => $pickupCenter->id,
+                        'name'            => $pickupCenter->name,
+                        'address'         => $pickupCenter->address,
+                        'contact_person'  => $pickupCenter->contact_person,
+                        'contact_phone'   => $pickupCenter->contact_phone,
                         'operating_hours' => $pickupCenter->operating_hours,
-                        'state'     => $pickupCenter->state->name ?? '',
+                        'state'           => $pickupCenter->state->name ?? '',
                     ],
                     'user' => [
                         'id'       => $user->id,
@@ -126,7 +140,7 @@ class ClaimProductController extends Controller
                 ->with('success', 'Product claimed successfully! You can print your receipt below.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Failed to submit claim. Please try again.');
+            return back()->with('error', 'Failed to submit claim. Please try again. ' . $e->getMessage());
         }
     }
 
@@ -153,11 +167,11 @@ class ClaimProductController extends Controller
             ->firstOrFail();
 
         $claim->update([
-            'status'      => 'rejected', // or 'cancelled' – we can use 'rejected' for admin, 'cancelled' for user
+            'status'      => 'cancelled',
             'admin_notes' => 'Cancelled by user',
         ]);
 
         return redirect()->route('member.claim-product.index')
-            ->with('success', 'Claim cancelled. You can submit a new claim if needed.');
+            ->with('success', 'Claim cancelled. You can submit a new claim anytime.');
     }
 }

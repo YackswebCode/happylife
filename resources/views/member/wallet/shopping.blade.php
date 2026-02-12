@@ -14,7 +14,7 @@
     <div class="bg-dark-gray text-white rounded-4 p-4 mb-4 shadow">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <p class="small opacity-75 mb-1">Shopping Wallet</p>
+                <p class="small opacity-75 mb-1">Wallet Balance</p>
                 <h1 class="display-6 fw-bold">₦{{ number_format($wallet->balance, 2) }}</h1>
                 <span class="badge bg-white text-dark bg-opacity-25">Locked: ₦{{ number_format($wallet->locked_balance, 2) }}</span>
             </div>

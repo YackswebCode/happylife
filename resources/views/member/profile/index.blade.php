@@ -162,7 +162,7 @@
         <div class="card-body">
             <div class="list-group list-group-flush">
                 <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
-                    <span>Shopping Wallet</span>
+                    <span>Amount: </span>
                     <span class="fw-bold text-teal-blue">₦{{ number_format($shoppingBalance, 2) }}</span>
                 </div>
             </div>
