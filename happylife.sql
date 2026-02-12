@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Feb 11, 2026 at 04:36 PM
+-- Generation Time: Feb 12, 2026 at 09:28 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -69,7 +69,8 @@ CREATE TABLE `commissions` (
 --
 
 INSERT INTO `commissions` (`id`, `user_id`, `from_user_id`, `type`, `amount`, `description`, `from_package_id`, `status`, `updated_at`, `created_at`) VALUES
-(4, 2, 28, 'direct', 1250.00, 'Direct sponsor bonus for Yahaya Ibrahim (SAPPHIRE)', 1, 'paid', '2026-02-11 07:51:26', '2026-02-11 06:51:26');
+(4, 2, 28, 'direct', 1250.00, 'Direct sponsor bonus for Yahaya Ibrahim (SAPPHIRE)', 1, 'paid', '2026-02-11 07:51:26', '2026-02-11 06:51:26'),
+(5, 2, 29, 'direct', 1250.00, 'Direct sponsor bonus for Yahaya Ibrahim (SAPPHIRE)', 1, 'paid', '2026-02-12 15:59:24', '2026-02-12 14:59:24');
 
 -- --------------------------------------------------------
 
@@ -149,6 +150,17 @@ CREATE TABLE `funding_requests` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `funding_requests`
+--
+
+INSERT INTO `funding_requests` (`id`, `user_id`, `amount`, `payment_method`, `transaction_id`, `proof`, `notes`, `status`, `admin_notes`, `approved_at`, `created_at`, `updated_at`) VALUES
+(1, 28, 1000.00, 'bank_transfer', 'PAY276264756', 'funding-proofs/VgS2uEwHBThbhTio82nFvmJGxdqPPqIDvE3blKEU.jpg', 'testing', 'pending', NULL, NULL, '2026-02-12 09:21:42', '2026-02-12 09:21:42'),
+(2, 28, 200.00, 'online', 'FUND-1770916652193-28', NULL, NULL, 'approved', NULL, '2026-02-12 16:17:38', '2026-02-12 16:17:38', '2026-02-12 16:17:38'),
+(3, 28, 1000.00, 'paystack', 'FUND-1770919849723-28', NULL, NULL, 'approved', NULL, '2026-02-12 17:10:55', '2026-02-12 17:10:55', '2026-02-12 17:10:55'),
+(4, 28, 2000.00, 'paystack', 'FUND-1770919876579-28', NULL, NULL, 'approved', NULL, '2026-02-12 17:11:21', '2026-02-12 17:11:21', '2026-02-12 17:11:21'),
+(5, 2, 200.00, 'paystack', 'FUND-1770922776456-2', NULL, NULL, 'approved', NULL, '2026-02-12 17:59:43', '2026-02-12 17:59:43', '2026-02-12 17:59:43');
+
 -- --------------------------------------------------------
 
 --
@@ -209,6 +221,13 @@ CREATE TABLE `kyc` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `kyc`
+--
+
+INSERT INTO `kyc` (`id`, `user_id`, `document_type`, `front_image`, `back_image`, `selfie_image`, `id_number`, `issue_date`, `expiry_date`, `place_of_issue`, `status`, `admin_comment`, `submitted_at`, `verified_at`, `verified_by`, `created_at`, `updated_at`) VALUES
+(2, 28, 'national_id', 'kyc/28/xZX5bJ6ek1Lid0bEgTI5tZo9U3RpJNLuA6hqNDjG.jpg', 'kyc/28/hKOWkUJjKLXGeEqGifWBiwQC4bOGF07uLa1XdY6I.jpg', NULL, '12345678901', '2026-06-11', '2029-10-12', 'Mokwa', 'pending', NULL, '2026-02-12 11:24:49', NULL, NULL, '2026-02-12 11:24:49', '2026-02-12 11:24:49');
 
 -- --------------------------------------------------------
 
@@ -305,6 +324,17 @@ CREATE TABLE `orders` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `user_id`, `order_number`, `subtotal`, `total`, `pv_total`, `status`, `payment_status`, `payment_method`, `items`, `created_at`, `updated_at`) VALUES
+(1, 28, 'ORD-698E11642E47C', 2000.00, 2000.00, 2, 'completed', 'paid', 'shopping_wallet', '\"[{\\\"product_id\\\":2,\\\"name\\\":\\\"Energy Drink\\\",\\\"price\\\":2000,\\\"quantity\\\":\\\"1\\\",\\\"pv\\\":2}]\"', '2026-02-12 16:44:04', '2026-02-12 16:44:04'),
+(2, 28, 'ORD-698E123E38C33', 2000.00, 2000.00, 2, 'completed', 'paid', 'shopping_wallet', '\"[{\\\"product_id\\\":2,\\\"name\\\":\\\"Energy Drink\\\",\\\"price\\\":2000,\\\"quantity\\\":1,\\\"pv\\\":2}]\"', '2026-02-12 16:47:42', '2026-02-12 16:47:42'),
+(3, 28, 'ORD-698E1428B078F', 2000.00, 2000.00, 2, 'completed', 'paid', 'shopping_wallet', '\"[{\\\"product_id\\\":2,\\\"name\\\":\\\"Energy Drink\\\",\\\"price\\\":2000,\\\"quantity\\\":\\\"1\\\",\\\"pv\\\":2}]\"', '2026-02-12 16:55:52', '2026-02-12 16:55:52'),
+(4, 28, 'ORD-698E1B82713B1', 2000.00, 2000.00, 2, 'completed', 'paid', 'shopping_wallet', '\"[{\\\"product_id\\\":2,\\\"name\\\":\\\"Energy Drink\\\",\\\"price\\\":2000,\\\"quantity\\\":1,\\\"pv\\\":2}]\"', '2026-02-12 17:27:14', '2026-02-12 17:27:14'),
+(5, 28, 'ORD-698E1C2373ACC', 2000.00, 2000.00, 2, 'completed', 'paid', 'shopping_wallet', '\"[{\\\"product_id\\\":2,\\\"name\\\":\\\"Energy Drink\\\",\\\"price\\\":2000,\\\"quantity\\\":1,\\\"pv\\\":2}]\"', '2026-02-12 17:29:55', '2026-02-12 17:29:55');
+
 -- --------------------------------------------------------
 
 --
@@ -381,7 +411,8 @@ INSERT INTO `payments` (`id`, `user_id`, `package_id`, `amount`, `payment_method
 (24, 25, 1, 6500.00, 'paystack', 'PS177079564525', 'HL177079563976225', 'paid', NULL, NULL, NULL, 'Paystack payment for SAPPHIRE package', '2026-02-11 06:40:45', '2026-02-11 06:40:45'),
 (25, 26, 1, 6500.00, 'paystack', 'PS177079584726', 'HL177079584230326', 'paid', NULL, NULL, NULL, 'Paystack payment for SAPPHIRE package', '2026-02-11 06:44:07', '2026-02-11 06:44:07'),
 (26, 27, 1, 6500.00, 'paystack', 'PS177079603027', 'HL177079601807227', 'paid', NULL, NULL, NULL, 'Paystack payment for SAPPHIRE package', '2026-02-11 06:47:10', '2026-02-11 06:47:10'),
-(27, 28, 1, 6500.00, 'paystack', 'PS177079628628', 'HL177079628042228', 'paid', NULL, NULL, NULL, 'Paystack payment for SAPPHIRE package', '2026-02-11 06:51:26', '2026-02-11 06:51:26');
+(27, 28, 1, 6500.00, 'paystack', 'PS177079628628', 'HL177079628042228', 'paid', NULL, NULL, NULL, 'Paystack payment for SAPPHIRE package', '2026-02-11 06:51:26', '2026-02-11 06:51:26'),
+(28, 29, 1, 6500.00, 'paystack', 'PS177091196429', 'HL177091195686829', 'paid', NULL, NULL, NULL, 'Paystack payment for SAPPHIRE package', '2026-02-12 14:59:24', '2026-02-12 14:59:24');
 
 -- --------------------------------------------------------
 
@@ -472,7 +503,7 @@ CREATE TABLE `product_claims` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `product_id` bigint(20) UNSIGNED NOT NULL,
-  `pickup_center_id` bigint(20) UNSIGNED NOT NULL,
+  `pickup_center_id` bigint(20) UNSIGNED DEFAULT NULL,
   `claim_number` varchar(255) NOT NULL,
   `status` enum('pending','approved','rejected','collected') NOT NULL DEFAULT 'pending',
   `admin_notes` text DEFAULT NULL,
@@ -489,7 +520,9 @@ CREATE TABLE `product_claims` (
 --
 
 INSERT INTO `product_claims` (`id`, `user_id`, `product_id`, `pickup_center_id`, `claim_number`, `status`, `admin_notes`, `claimed_at`, `approved_at`, `collected_at`, `receipt_data`, `created_at`, `updated_at`) VALUES
-(1, 2, 1, 2, 'CLM-20260211-0001', 'pending', NULL, '2026-02-11 13:41:57', NULL, NULL, '{\"product\":{\"id\":1,\"name\":\"Starter Kit\",\"price\":\"6500.00\",\"pv\":10},\"pickup_center\":{\"id\":2,\"name\":\"Abuja Central\",\"address\":\"456 CBD, Abuja\",\"contact_person\":\"Jane Smith\",\"contact_phone\":\"08030000002\",\"operating_hours\":\"Mon-Sat 9am-5pm\",\"state\":\"Abia\"},\"user\":{\"id\":2,\"name\":\"John Doe\",\"email\":\"john@example.com\",\"phone\":\"08030000003\",\"username\":\"johndoe\"}}', '2026-02-11 13:41:57', '2026-02-11 13:41:57');
+(1, 2, 1, 2, 'CLM-20260211-0001', 'pending', NULL, '2026-02-11 13:41:57', NULL, NULL, '{\"product\":{\"id\":1,\"name\":\"Starter Kit\",\"price\":\"6500.00\",\"pv\":10},\"pickup_center\":{\"id\":2,\"name\":\"Abuja Central\",\"address\":\"456 CBD, Abuja\",\"contact_person\":\"Jane Smith\",\"contact_phone\":\"08030000002\",\"operating_hours\":\"Mon-Sat 9am-5pm\",\"state\":\"Abia\"},\"user\":{\"id\":2,\"name\":\"John Doe\",\"email\":\"john@example.com\",\"phone\":\"08030000003\",\"username\":\"johndoe\"}}', '2026-02-11 13:41:57', '2026-02-11 13:41:57'),
+(2, 28, 2, 2, 'CLM-20260212-0001', 'rejected', 'Cancelled by user', '2026-02-12 18:49:47', NULL, NULL, '{\"product\":{\"id\":2,\"name\":\"Ohekem Pack\",\"price\":\"10500.00\",\"pv\":16},\"user\":{\"id\":28,\"name\":\"Yahaya Ibrahim\",\"email\":\"yahayaibraheem808@gmail.com\",\"username\":\"yahayaibrahim\"},\"upgrade_reference\":\"UPG-DBWGVHFJ1SGSXGQZNOMJ\"}', '2026-02-12 18:49:47', '2026-02-12 18:51:33'),
+(4, 28, 2, 2, 'CLM-20260212-0002', 'pending', NULL, '2026-02-12 19:03:45', NULL, NULL, '{\"product\":{\"id\":2,\"name\":\"Ohekem Pack\",\"price\":\"10500.00\",\"pv\":16},\"pickup_center\":{\"id\":2,\"name\":\"Abuja Central\",\"address\":\"456 CBD, Abuja\",\"contact_person\":\"Jane Smith\",\"contact_phone\":\"08030000002\",\"operating_hours\":\"Mon-Sat 9am-5pm\",\"state\":\"Abia\"},\"user\":{\"id\":28,\"name\":\"Yahaya Ibrahim\",\"email\":\"yahayaibraheem808@gmail.com\",\"phone\":\"+234 7084343765\",\"username\":\"yahayaibrahim\"}}', '2026-02-12 19:03:45', '2026-02-12 19:03:45');
 
 -- --------------------------------------------------------
 
@@ -570,7 +603,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('q4vo0zGiX6Nymi1FdtEPZXxFTeTZn81jL6KASn6Z', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoialh0YkFuOUJnNzg1b0NBY3ZRcnFmS09sblU0ZVlEMEt6ckpLSVNkMCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9fQ==', 1770823513);
+('ttiSH428rr9KxAgdvcv305yqAsPNl6T5RQxPpeBR', 28, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiOW1KMFZScDN1VW1kUmxITmVHRUtia3Axdk1PVTVhR3d2Y3BRWUVrdiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9tZW1iZXIvZGFzaGJvYXJkIjtzOjU6InJvdXRlIjtzOjE2OiJtZW1iZXIuZGFzaGJvYXJkIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mjg7fQ==', 1770927838),
+('U34Tl0ZK4W0qrGQHf7dwmF51bq6ALx1qhCubp9hg', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Safari/605.1.15', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiU3l3S2c1UWtrTzVybXpUa1JKNVZMYjNxSkhHdTdXUk5ZWnBIUngzRCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1770924244);
 
 -- --------------------------------------------------------
 
@@ -639,6 +673,13 @@ CREATE TABLE `upgrades` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `upgrades`
+--
+
+INSERT INTO `upgrades` (`id`, `user_id`, `old_package_id`, `new_package_id`, `difference_amount`, `payment_method`, `status`, `reference`, `created_at`, `updated_at`) VALUES
+(7, 28, 1, 2, 4000.00, 'shopping_wallet', 'completed', 'UPG-DBWGVHFJ1SGSXGQZNOMJ', '2026-02-12 18:49:47', '2026-02-12 18:49:47');
+
 -- --------------------------------------------------------
 
 --
@@ -697,8 +738,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `username`, `phone`, `password`, `sponsor_id`, `placement_id`, `placement_position`, `package_id`, `country`, `state`, `product_id`, `pickup_center_id`, `rank_id`, `left_count`, `right_count`, `total_pv`, `current_pv`, `status`, `registration_date`, `role`, `remember_token`, `verification_code`, `created_at`, `updated_at`, `referral_code`, `payment_status`, `activated_at`, `commission_wallet_balance`, `registration_wallet_balance`, `rank_wallet_balance`, `shopping_wallet_balance`, `left_pv`, `right_pv`, `direct_bonus_total`, `indirect_level_2_bonus_total`, `indirect_level_3_bonus_total`, `matching_pv_bonus_total`, `rank_bonus_total`, `repurchase_bonus_total`, `lifestyle_bonus_total`, `direct_sponsors_count`) VALUES
-(2, 'John Doe', 'john@example.com', '2026-02-10 13:18:14', 'johndoe', '08030000003', '$2y$12$54luF8FjQiMF5Z9/x7FbvO0RRZLtmGML4HrhpsoY4o/vycr9W9WRi', '1', '1', NULL, 2, NULL, NULL, 1, 2, 2, 1, 0, 50.00, 50.00, 'active', '2026-02-10 11:51:19', 'member', NULL, NULL, '2026-02-10 11:51:19', '2026-02-11 09:37:31', 'SP12345', 'paid', NULL, 11250.00, 0.00, 0.00, 0.00, 50.00, 0.00, 6250.00, 0.00, 0.00, 0.00, 5000.00, 0.00, 0.00, 1),
-(28, 'Yahaya Ibrahim', 'yahayaibraheem808@gmail.com', '2026-02-11 06:51:13', 'yahayaibrahim', '+234 7084343765', '$2y$12$pVcGOmKwa1g4jwg1mJSNb..QXAlbdH5YwGuIldNA98tI5CnL8vEfa', '2', '2', 'left', 1, 'AREWA', 'Kano Central', 1, NULL, NULL, 0, 0, 10.00, 10.00, 'active', '2026-02-11 06:50:48', 'member', NULL, NULL, '2026-02-11 06:50:48', '2026-02-11 06:51:26', 'HLOZ8L9N', 'paid', '2026-02-11 06:51:26', 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0);
+(2, 'John Doe', 'john@example.com', '2026-02-10 13:18:14', 'johndoe', '08030000003', '$2y$12$54luF8FjQiMF5Z9/x7FbvO0RRZLtmGML4HrhpsoY4o/vycr9W9WRi', '1', '1', NULL, 2, NULL, NULL, 1, 2, 2, 1, 1, 60.00, 60.00, 'active', '2026-02-10 11:51:19', 'member', NULL, NULL, '2026-02-10 11:51:19', '2026-02-12 14:59:24', 'SP12345', 'paid', NULL, 12500.00, 0.00, 0.00, 0.00, 50.00, 10.00, 7500.00, 0.00, 0.00, 0.00, 5000.00, 0.00, 0.00, 2),
+(28, 'Yahaya Ibrahim', 'yahayaibraheem808@gmail.com', '2026-02-11 06:51:13', 'yahayaibrahim', '+234 7084343765', '$2y$12$pVcGOmKwa1g4jwg1mJSNb..QXAlbdH5YwGuIldNA98tI5CnL8vEfa', '2', '2', 'left', 2, 'AREWA', 'Kano Central', 2, NULL, 3, 0, 0, 200.00, 200.00, 'active', '2026-02-11 06:50:48', 'member', NULL, NULL, '2026-02-11 06:50:48', '2026-02-12 18:49:47', 'HLOZ8L9N', 'paid', '2026-02-11 06:51:26', 19000.00, 0.00, 0.00, 250.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 18500.00, 500.00, 0.00, 0),
+(29, 'Yahaya Ibrahim', 'yi66130@gmail.com', '2026-02-12 14:59:04', 'yahayaibrahim1', '+2348012345678', '$2y$12$HQClxDtd5fHZ0AW7.6WhwuX7xCPwaCfBnYGEBAUnuzFzLbzpwiwt6', '2', '2', 'right', 1, 'AREWA', 'Kano Central', 1, NULL, NULL, 0, 0, 10.00, 10.00, 'active', '2026-02-12 14:58:41', 'member', NULL, NULL, '2026-02-12 14:58:41', '2026-02-12 14:59:24', 'HLXRKHDW', 'paid', '2026-02-12 14:59:24', 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0);
 
 -- --------------------------------------------------------
 
@@ -822,14 +864,9 @@ CREATE TABLE `wallets` (
 --
 
 INSERT INTO `wallets` (`id`, `user_id`, `type`, `balance`, `locked_balance`, `created_at`, `updated_at`) VALUES
-(2, 2, 'commission', 5000.00, 0.00, '2026-02-11 09:37:31', '2026-02-11 09:37:31'),
-(3, 2, 'registration', 0.00, 0.00, '2026-02-11 11:00:38', '2026-02-11 11:00:38'),
-(4, 2, 'rank', 0.00, 0.00, '2026-02-11 11:00:38', '2026-02-11 11:00:38'),
-(5, 2, 'shopping', 0.00, 0.00, '2026-02-11 11:00:38', '2026-02-11 11:00:38'),
-(6, 28, 'commission', 0.00, 0.00, '2026-02-11 14:24:32', '2026-02-11 14:24:32'),
-(7, 28, 'registration', 0.00, 0.00, '2026-02-11 14:24:32', '2026-02-11 14:24:32'),
-(8, 28, 'rank', 0.00, 0.00, '2026-02-11 14:24:32', '2026-02-11 14:24:32'),
-(9, 28, 'shopping', 0.00, 0.00, '2026-02-11 14:24:32', '2026-02-11 14:24:32');
+(5, 2, 'shopping', 200.00, 0.00, '2026-02-11 11:00:38', '2026-02-12 17:59:43'),
+(9, 28, 'shopping', 250.00, 0.00, '2026-02-11 14:24:32', '2026-02-12 18:49:47'),
+(10, 28, 'commission', 17500.00, 0.00, '2026-02-12 18:34:00', '2026-02-12 18:37:31');
 
 -- --------------------------------------------------------
 
@@ -856,7 +893,22 @@ CREATE TABLE `wallet_transactions` (
 --
 
 INSERT INTO `wallet_transactions` (`id`, `wallet_id`, `user_id`, `type`, `amount`, `description`, `reference`, `status`, `metadata`, `created_at`, `updated_at`) VALUES
-(1, 2, 2, 'credit', 5000.00, 'Rank achievement bonus: OHEKEM', 'RANK-2-1770806251', 'completed', '{\"rank_id\":2,\"rank_name\":\"OHEKEM\"}', '2026-02-11 09:37:31', '2026-02-11 09:37:31');
+(7, 9, 28, 'debit', 2000.00, 'Purchase from Repurchase Mall (Order #ORD-698E11642E47C)', 'ORD-698E11642E47C', 'completed', '\"{\\\"order_id\\\":1}\"', '2026-02-12 16:44:04', '2026-02-12 16:44:04'),
+(8, 9, 28, 'credit', 250.00, 'Repurchase Bonus (Order #ORD-698E11642E47C)', 'ORD-698E11642E47C-BONUS', 'completed', '\"{\\\"order_id\\\":1}\"', '2026-02-12 16:44:04', '2026-02-12 16:44:04'),
+(9, 9, 28, 'debit', 2000.00, 'Purchase from Repurchase Mall (Order #ORD-698E123E38C33)', 'ORD-698E123E38C33', 'completed', '\"{\\\"order_id\\\":2}\"', '2026-02-12 16:47:42', '2026-02-12 16:47:42'),
+(10, 9, 28, 'credit', 250.00, 'Repurchase Bonus (Order #ORD-698E123E38C33)', 'ORD-698E123E38C33-BONUS', 'completed', '\"{\\\"order_id\\\":2}\"', '2026-02-12 16:47:42', '2026-02-12 16:47:42'),
+(11, 9, 28, 'debit', 2000.00, 'Purchase from Repurchase Mall (Order #ORD-698E1428B078F)', 'ORD-698E1428B078F', 'completed', '\"{\\\"order_id\\\":3}\"', '2026-02-12 16:55:52', '2026-02-12 16:55:52'),
+(12, 9, 28, 'credit', 250.00, 'Repurchase Bonus (Order #ORD-698E1428B078F)', 'ORD-698E1428B078F-BONUS', 'completed', '\"{\\\"order_id\\\":3}\"', '2026-02-12 16:55:52', '2026-02-12 16:55:52'),
+(13, 9, 28, 'credit', 1000.00, 'Online funding via Paystack', 'FUND-1770919849723-28', 'completed', '\"{\\\"gateway\\\":\\\"paystack\\\",\\\"wallet_type\\\":\\\"shopping\\\"}\"', '2026-02-12 17:10:55', '2026-02-12 17:10:55'),
+(14, 9, 28, 'credit', 2000.00, 'Online funding via Paystack', 'FUND-1770919876579-28', 'completed', '\"{\\\"gateway\\\":\\\"paystack\\\",\\\"wallet_type\\\":\\\"shopping\\\"}\"', '2026-02-12 17:11:21', '2026-02-12 17:11:21'),
+(15, 9, 28, 'debit', 2000.00, 'Purchase from Repurchase Mall (Order #ORD-698E1B82713B1)', 'ORD-698E1B82713B1', 'completed', '\"{\\\"order_id\\\":4}\"', '2026-02-12 17:27:14', '2026-02-12 17:27:14'),
+(16, 9, 28, 'credit', 250.00, 'Repurchase Bonus (Order #ORD-698E1B82713B1)', 'ORD-698E1B82713B1-BONUS', 'completed', '\"{\\\"order_id\\\":4}\"', '2026-02-12 17:27:14', '2026-02-12 17:27:14'),
+(17, 9, 28, 'debit', 2000.00, 'Purchase from Repurchase Mall (Order #ORD-698E1C2373ACC)', 'ORD-698E1C2373ACC', 'completed', '\"{\\\"order_id\\\":5}\"', '2026-02-12 17:29:55', '2026-02-12 17:29:55'),
+(18, 9, 28, 'credit', 250.00, 'Repurchase Bonus (Order #ORD-698E1C2373ACC)', 'ORD-698E1C2373ACC-BONUS', 'completed', '\"{\\\"order_id\\\":5}\"', '2026-02-12 17:29:55', '2026-02-12 17:29:55'),
+(19, 5, 2, 'credit', 200.00, 'Online funding via Paystack', 'FUND-1770922776456-2', 'completed', '\"{\\\"gateway\\\":\\\"paystack\\\",\\\"wallet_type\\\":\\\"shopping\\\"}\"', '2026-02-12 17:59:43', '2026-02-12 17:59:43'),
+(20, 10, 28, 'credit', 5000.00, 'Rank achievement bonus: OHEKEM', 'RANK-2-1770924840', 'completed', '{\"rank_id\":2,\"rank_name\":\"OHEKEM\"}', '2026-02-12 18:34:00', '2026-02-12 18:34:00'),
+(21, 10, 28, 'credit', 12500.00, 'Rank achievement bonus: EMERALD', 'RANK-3-1770925051', 'completed', '{\"rank_id\":3,\"rank_name\":\"EMERALD\"}', '2026-02-12 18:37:31', '2026-02-12 18:37:31'),
+(25, 9, 28, 'debit', 4000.00, 'Package upgrade: SAPPHIRE → OHEKEM', 'UPG-DBWGVHFJ1SGSXGQZNOMJ', 'completed', NULL, '2026-02-12 18:49:47', '2026-02-12 18:49:47');
 
 -- --------------------------------------------------------
 
@@ -1020,7 +1072,6 @@ ALTER TABLE `product_categories`
 --
 ALTER TABLE `product_claims`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `product_claims_user_id_product_id_unique` (`user_id`,`product_id`),
   ADD UNIQUE KEY `product_claims_claim_number_unique` (`claim_number`),
   ADD KEY `product_claims_product_id_foreign` (`product_id`),
   ADD KEY `product_claims_pickup_center_id_foreign` (`pickup_center_id`),
@@ -1131,7 +1182,7 @@ ALTER TABLE `withdrawals`
 -- AUTO_INCREMENT for table `commissions`
 --
 ALTER TABLE `commissions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `countries`
@@ -1155,7 +1206,7 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT for table `funding_requests`
 --
 ALTER TABLE `funding_requests`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -1167,7 +1218,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `kyc`
 --
 ALTER TABLE `kyc`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `landing_products`
@@ -1185,7 +1236,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `packages`
@@ -1197,7 +1248,7 @@ ALTER TABLE `packages`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `pickup_centers`
@@ -1221,7 +1272,7 @@ ALTER TABLE `product_categories`
 -- AUTO_INCREMENT for table `product_claims`
 --
 ALTER TABLE `product_claims`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `ranks`
@@ -1245,13 +1296,13 @@ ALTER TABLE `states`
 -- AUTO_INCREMENT for table `upgrades`
 --
 ALTER TABLE `upgrades`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `vtu_plans`
@@ -1275,13 +1326,13 @@ ALTER TABLE `vtu_transactions`
 -- AUTO_INCREMENT for table `wallets`
 --
 ALTER TABLE `wallets`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `wallet_transactions`
 --
 ALTER TABLE `wallet_transactions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `withdrawals`
