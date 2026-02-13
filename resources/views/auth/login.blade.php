@@ -69,7 +69,7 @@
                                 </label>
                             </div>
                             @if (Route::has('password.request'))
-                                <a class="text-danger text-decoration-none fw-semibold" href="{{ route('password.request') }}">
+                               <a class="text-danger text-decoration-none fw-semibold" href="{{ route('password.request') }}">
                                     Forgot Password?
                                 </a>
                             @endif

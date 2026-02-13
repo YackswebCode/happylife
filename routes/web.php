@@ -8,7 +8,7 @@ use App\Http\Controllers\Auth\VerifyController;
 use App\Http\Controllers\Auth\PaymentController;
 use App\Http\Controllers\Member\GenealogyController;
 use App\Http\Controllers\Member\WalletController;
-
+use App\Http\Controllers\Auth\ForgotPasswordController;
 /*
 |--------------------------------------------------------------------------
 | LANDING PAGES
@@ -110,6 +110,20 @@ Route::middleware(['auth', 'verified'])
  Route::get('/shopping/receipt/{order}', [App\Http\Controllers\Member\ShoppingController::class, 'receipt'])
     ->name('member.shopping.receipt')
     ->middleware('auth');
+
+
+    // Password Reset (Custom 6-digit code flow)
+Route::get('forgot-password', [ForgotPasswordController::class, 'showForgotForm'])->name('password.request');
+Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetCode'])->name('password.email');
+
+Route::get('verify-reset-code', [ForgotPasswordController::class, 'showVerifyCodeForm'])->name('password.verify.code');
+Route::post('verify-reset-code', [ForgotPasswordController::class, 'verifyCode'])->name('password.verify.code.submit');
+
+Route::get('reset-password', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
+Route::post('reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset.submit');
+
+Route::post('forgot-password/resend', [ForgotPasswordController::class, 'resendResetCode'])
+    ->name('password.resend');
 /*
 |--------------------------------------------------------------------------
 | EXTERNAL ROUTE FILES
