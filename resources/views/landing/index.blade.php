@@ -17,7 +17,7 @@
             <div class="col-lg-6 mb-5 mb-lg-0">
                 <div class="mb-4">
                     <span class="badge bg-white text-dark px-4 py-2 rounded-pill fw-semibold mb-3">
-                        🚀 Join The Revolution
+                        ðŸš€ Join The Revolution
                     </span>
                     <h1 class="display-4 fw-bold text-white mb-4">
                         Build Your <span class="text-warning">Financial Freedom</span> Empire
@@ -46,7 +46,7 @@
                     </div>
                     <div class="col-4">
                         <div class="text-center">
-                            <div class="h2 fw-bold text-white mb-1">₦500M+</div>
+                            <div class="h2 fw-bold text-white mb-1">â‚¦500M+</div>
                             <div class="text-white opacity-75 small">Paid in Earnings</div>
                         </div>
                     </div>
@@ -206,6 +206,8 @@
     </div>
 </section>
 
+@php use Illuminate\Support\Str; @endphp
+
 <!-- Products -->
 <section class="py-6 bg-light position-relative">
     <!-- Background Pattern -->
@@ -217,60 +219,48 @@
     
     <div class="container position-relative">
         <div class="text-center mb-6">
-            <h2 class="display-5 fw-bold mb-3">Our <span class="text-danger">Products !</span></h2>
+            <h2 class="display-5 fw-bold mb-3">
+                Our <span class="text-danger">Products!</span>
+            </h2>
             <p class="lead text-muted mx-auto" style="max-width: 600px;">
-             The products in our catalog are designed to meet the diverse needs of our customers, providing exceptional value and quality.
+                The products in our catalog are designed to meet the diverse needs 
+                of our customers, providing exceptional value and quality.
             </p>
         </div>
         
         <div class="row g-4 justify-content-center">
-            @foreach($products as $index => $product)
-            <div class="col-md-6 col-lg-3">
-                <div class="card border-0 shadow-lg rounded-4 h-100">
-                  
-                    
-                    <div class="card-body p-4">
-                        <div class="text-center mb-4">
-                            <h3 class="h3 fw-bold mb-2">{{ $product->name }}</h3>
-                         
-                            <!-- Product Image (with fallback icon) -->
-                            <div class="package-icon mx-auto mb-4">
-                                @if(!empty($product->image) && file_exists(public_path('storage/'.$product->image)))
-                                    <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}" class="img-fluid rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
-                                @else
-                                    <!-- Fallback Icons -->
-                                    @switch($index)
-                                        @case(0)
-                                            <i class="bi bi-gem text-primary" style="font-size: 2.5rem;"></i>
-                                            @break
-                                        @case(1)
-                                            <i class="bi bi-star-fill text-warning" style="font-size: 2.5rem;"></i>
-                                            @break
-                                        @case(2)
-                                            <i class="bi bi-trophy text-success" style="font-size: 2.5rem;"></i>
-                                            @break
-                                        @case(3)
-                                            <i class="bi bi-award text-danger" style="font-size: 2.5rem;"></i>
-                                            @break
-                                        @default
-                                            <i class="bi bi-box-seam text-secondary" style="font-size: 2.5rem;"></i>
-                                    @endswitch
-                                @endif
+            @forelse($products as $product)
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border-0 shadow-lg rounded-4 h-100">
+                        <div class="card-body p-4 text-center">
+
+                            <h3 class="h5 fw-bold mb-3">
+                                {{ $product->name }}
+                            </h3>
+
+                            <div class="package-icon mx-auto mb-3">
+                                <img src="{{ $product->image_url }}"
+                                     alt="{{ $product->name }}"
+                                     class="img-fluid rounded-circle"
+                                     style="width: 90px; height: 90px; object-fit: cover;">
                             </div>
+
+                            <p class="text-muted small mb-3">
+                                {{ Str::limit($product->description, 80) }}
+                            </p>
+
+                            <div class="fw-bold text-danger fs-5">
+                                ₦{{ number_format($product->display_price, 2) }}
+                            </div>
+
                         </div>
-                        
-                        <ul class="list-unstyled mb-4">
-                            <li class="d-flex align-items-center mb-3">
-                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                <span class="text-muted">Product worth ₦{{ number_format($product->price, 2) }}</span>
-                            </li> 
-                        </ul>
-                        
-                        <!-- "Select Package" button removed as requested -->
                     </div>
                 </div>
-            </div>
-            @endforeach
+            @empty
+                <div class="col-12 text-center">
+                    <p class="text-muted">No products available at the moment.</p>
+                </div>
+            @endforelse
         </div>
     </div>
 </section>

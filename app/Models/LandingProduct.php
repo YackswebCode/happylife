@@ -9,6 +9,8 @@ class LandingProduct extends Model
 {
     use HasFactory;
 
+    protected $table = 'landing_products';
+
     protected $fillable = [
         'name',
         'image',
@@ -25,12 +27,15 @@ class LandingProduct extends Model
         'is_active' => 'boolean'
     ];
 
-    // Accessor for image URL
+    /**
+     * Accessor: Get full image URL with fallback
+     */
     public function getImageUrlAttribute()
     {
-        if ($this->image) {
+        if ($this->image && file_exists(public_path('storage/' . $this->image))) {
             return asset('storage/' . $this->image);
         }
+
         return asset('images/default-product.jpg');
     }
 }

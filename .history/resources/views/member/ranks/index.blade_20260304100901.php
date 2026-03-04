@@ -32,6 +32,9 @@
     .rank-header.bg-gradient-teal {
         background: linear-gradient(135deg, var(--color-teal-blue) 0%, #3DB7D6 100%);
     }
+    .rank-header.bg-gradient-cyan {
+        background: linear-gradient(135deg, #3DB7D6 0%, #1FA3C4 100%);
+    }
     .rank-reward {
         font-size: 1.4rem;
         font-weight: 800;
@@ -96,23 +99,12 @@
         border-radius: 8px;
         font-size: 0.9rem;
     }
-    .conditions-list {
-        margin-top: 10px;
-    }
     .condition-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 5px;
+        font-size: 0.9rem;
+        margin-bottom: 2px;
     }
-    .condition-item i {
-        margin-right: 8px;
-    }
-    .condition-met {
-        color: #28a745;
-    }
-    .condition-missing {
-        color: #dc3545;
-    }
+    .condition-met { color: #28a745; font-weight: 600; }
+    .condition-missing { color: #dc3545; font-weight: 600; }
 </style>
 @endpush
 
@@ -141,11 +133,24 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
-
 @if(session('error'))
     <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
         <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i> 
         <div class="flex-grow-1">{{ session('error') }}</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+@if(session('warning'))
+    <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i> 
+        <div class="flex-grow-1">{{ session('warning') }}</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+@if(session('info'))
+    <div class="alert alert-info alert-dismissible fade show d-flex align-items-center" role="alert">
+        <i class="bi bi-info-circle-fill me-2 fs-5"></i> 
+        <div class="flex-grow-1">{{ session('info') }}</div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
@@ -158,9 +163,7 @@
             <div class="card-body p-4">
                 <div class="row align-items-center">
                     <div class="col-lg-6">
-                        <h5 class="text-dark-gray mb-2">
-                            <i class="bi bi-award-fill text-red me-2"></i> Your Current Rank
-                        </h5>
+                        <h5 class="text-dark-gray mb-2"><i class="bi bi-award-fill text-red me-2"></i> Your Current Rank</h5>
                         @if($currentRank)
                             <h2 class="display-6 fw-bold text-red">{{ $currentRank->name }}</h2>
                             <p class="text-muted mb-0">Level {{ $currentRank->level }} Achiever</p>
@@ -174,38 +177,26 @@
                             <div class="bg-light p-4 rounded">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="fw-semibold">Next Rank: {{ $nextRank->name }}</span>
-                                    <span class="text-red fw-bold">
-                                        {{ number_format($weakerSidePv, 1) }} / {{ number_format($nextRank->required_pv, 1) }} PV (weaker side)
-                                    </span>
+                                    <span class="text-red fw-bold">{{ number_format($weakerSidePv, 1) }} / {{ number_format($nextRank->required_pv, 1) }} PV (weaker side)</span>
                                 </div>
                                 <div class="progress" style="height: 12px;">
-                                    <div class="progress-bar progress-bar-rank" role="progressbar" 
-                                         style="width: {{ $progress }}%;" 
-                                         aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <div class="progress-bar progress-bar-rank" role="progressbar" style="width: {{ $progress }}%;" aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
-
-                                <!-- ========== Conditions to Claim ========== -->
-                                <div class="conditions-list mt-3">
+                                <div class="mt-3">
+                                    <p class="mb-1"><strong>Conditions to claim {{ $nextRank->name }}:</strong></p>
                                     <div class="condition-item {{ ($user->left_pv ?? 0) >= $nextRank->required_pv ? 'condition-met' : 'condition-missing' }}">
-                                        <i class="bi {{ ($user->left_pv ?? 0) >= $nextRank->required_pv ? 'bi-check-circle-fill' : 'bi-x-circle-fill' }}"></i>
-                                        Left PV ≥ {{ number_format($nextRank->required_pv,1) }}
+                                        <i class="bi {{ ($user->left_pv ?? 0) >= $nextRank->required_pv ? 'bi-check-circle-fill' : 'bi-x-circle-fill' }} me-1"></i>
+                                        Left PV ≥ {{ number_format($nextRank->required_pv, 1) }} (Current: {{ number_format($user->left_pv ?? 0, 1) }})
                                     </div>
                                     <div class="condition-item {{ ($user->right_pv ?? 0) >= $nextRank->required_pv ? 'condition-met' : 'condition-missing' }}">
-                                        <i class="bi {{ ($user->right_pv ?? 0) >= $nextRank->required_pv ? 'bi-check-circle-fill' : 'bi-x-circle-fill' }}"></i>
-                                        Right PV ≥ {{ number_format($nextRank->required_pv,1) }}
+                                        <i class="bi {{ ($user->right_pv ?? 0) >= $nextRank->required_pv ? 'bi-check-circle-fill' : 'bi-x-circle-fill' }} me-1"></i>
+                                        Right PV ≥ {{ number_format($nextRank->required_pv, 1) }} (Current: {{ number_format($user->right_pv ?? 0, 1) }})
                                     </div>
-                                    <div class="condition-item {{ $user->package_id == $highestPackageId ? 'condition-met' : 'condition-missing' }}">
-                                        <i class="bi {{ $user->package_id == $highestPackageId ? 'bi-check-circle-fill' : 'bi-x-circle-fill' }}"></i>
-                                        Member must be on the highest package
-                                    </div>
-                                    <div class="condition-item {{ $user->direct_referrals_count >= 2 ? 'condition-met' : 'condition-missing' }}">
-                                        <i class="bi {{ $user->direct_referrals_count >= 2 ? 'bi-check-circle-fill' : 'bi-x-circle-fill' }}"></i>
-                                        Member must have at least 2 direct referrals
-                                    </div>
+                                    @if($currentRank && $currentRank->level >= $nextRank->level)
+                                        <div class="condition-item condition-met"><i class="bi bi-check-circle-fill me-1"></i> Already achieved higher or same rank</div>
+                                    @endif
                                 </div>
-
-                                <div class="d-flex justify-content-between mt-3">
-                                    <small class="text-muted">Progress: {{ $progress }}%</small>
+                                <div class="d-flex justify-content-end mt-2">
                                     @if($canClaim)
                                         <form action="{{ route('member.ranks.claim') }}" method="POST">
                                             @csrf
@@ -213,6 +204,8 @@
                                                 <i class="bi bi-gem me-1"></i> Claim {{ $nextRank->name }}
                                             </button>
                                         </form>
+                                    @else
+                                        <small class="text-muted">Complete all conditions to claim this rank.</small>
                                     @endif
                                 </div>
                             </div>
@@ -235,9 +228,7 @@
     <div class="col-12">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-0 py-3">
-                <h5 class="mb-0 text-dark-gray">
-                    <i class="bi bi-bar-chart-steps text-red me-2"></i> Career Path
-                </h5>
+                <h5 class="mb-0 text-dark-gray"><i class="bi bi-bar-chart-steps text-red me-2"></i> Career Path</h5>
             </div>
             <div class="card-body">
                 <div class="row g-4">
@@ -261,8 +252,7 @@
                                 <div class="card-body">
                                     <div class="text-center mb-3">
                                         <span class="rank-pv-requirement">
-                                            <i class="bi bi-lightning-charge-fill me-1"></i> 
-                                            {{ number_format($rank->required_pv, 1) }} PV Required (per side)
+                                            <i class="bi bi-lightning-charge-fill me-1"></i> {{ number_format($rank->required_pv, 1) }} PV Required (per side)
                                         </span>
                                     </div>
                                     <div class="rank-reward text-center mb-3">
@@ -310,13 +300,38 @@
             </div>
         </div>
     </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 text-dark-gray"><i class="bi bi-trophy-fill text-warning me-2"></i> Next Rank Achievement</h5>
+            </div>
+            <div class="card-body">
+                @if($nextRank)
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-award fs-1 text-warning"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mb-1">{{ $nextRank->name }}</h5>
+                            <p class="text-muted mb-0">
+                                Left: {{ number_format(max(0, $nextRank->required_pv - ($user->left_pv ?? 0)), 1) }} PV needed<br>
+                                Right: {{ number_format(max(0, $nextRank->required_pv - ($user->right_pv ?? 0)), 1) }} PV needed
+                            </p>
+                        </div>
+                    </div>
+                @else
+                    <p class="text-muted mb-0">You have reached the highest rank. Congratulations!</p>
+                @endif
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
     document.addEventListener('alpine:init', function() {
-        // Alpine.js dynamic components if needed
+        // Rank-related dynamic components if needed
     });
 </script>
 @endpush

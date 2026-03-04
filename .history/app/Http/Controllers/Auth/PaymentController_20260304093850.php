@@ -64,17 +64,14 @@ class PaymentController extends Controller
                 'status' => 'paid',
             ]);
 
-            // Activate user
             $user->status = 'active';
             $user->payment_status = 'paid';
             $user->activated_at = now();
             $user->save();
 
-            // Now bonuses & PV start
             $this->updatePlacementUserCounts($user);
             $this->updateAllPvCounts($user, $package);
             $this->processDirectBonus($user, $package);
-            $this->processIndirectBonuses($user, $package);
             $this->processPairBonuses($user);
 
             DB::commit();
@@ -155,7 +152,6 @@ class PaymentController extends Controller
         }
     }
 
-    // ✅ DIRECT BONUS (Level 1)
     private function processDirectBonus($user, $package)
     {
         if (!$user->sponsor_id) return;
@@ -179,58 +175,6 @@ class PaymentController extends Controller
             'from_package_id' => $package->id,
             'status' => 'paid',
         ]);
-    }
-
-    // ✅ INDIRECT BONUS (Level 2 & 3)
-    private function processIndirectBonuses($user, $package)
-    {
-        $level = 1;
-        $currentSponsorId = $user->sponsor_id;
-
-        while ($currentSponsorId && $level <= 3) {
-
-            $sponsor = User::find($currentSponsorId);
-            if (!$sponsor) break;
-
-            if ($level == 2) {
-
-                $bonus = $package->direct_bonus_amount * 0.5; // 50% of direct
-
-                $sponsor->commission_wallet_balance += $bonus;
-                $sponsor->indirect_level_2_bonus_total += $bonus;
-                $sponsor->save();
-
-                Commission::create([
-                    'user_id' => $sponsor->id,
-                    'type' => 'indirect_level_2',
-                    'amount' => $bonus,
-                    'from_user_id' => $user->id,
-                    'from_package_id' => $package->id,
-                    'status' => 'paid',
-                ]);
-            }
-
-            if ($level == 3) {
-
-                $bonus = $package->direct_bonus_amount * 0.3; // 30% of direct
-
-                $sponsor->commission_wallet_balance += $bonus;
-                $sponsor->indirect_level_3_bonus_total += $bonus;
-                $sponsor->save();
-
-                Commission::create([
-                    'user_id' => $sponsor->id,
-                    'type' => 'indirect_level_3',
-                    'amount' => $bonus,
-                    'from_user_id' => $user->id,
-                    'from_package_id' => $package->id,
-                    'status' => 'paid',
-                ]);
-            }
-
-            $currentSponsorId = $sponsor->sponsor_id;
-            $level++;
-        }
     }
 
     private function processPairBonuses($user)

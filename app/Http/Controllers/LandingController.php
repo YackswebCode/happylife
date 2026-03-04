@@ -2,67 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Product;
+use App\Models\LandingProduct;
 
 class LandingController extends Controller
 {
     public function index()
     {
-        if (class_exists('App\Models\Product')) {
-            $products = Product::latest()->limit(8)->get();
-        } else {
-            // Fallback data with image paths (placeholders)
-            $products = collect([
-                (object) [
-                    'name'  => 'Starter Kit',
-                    'pv'    => 10,
-                    'price' => 6500,
-                    'image' => 'images/products/starter-kit.jpg'
-                ],
-                (object) [
-                    'name'  => 'Ohekem Pack',
-                    'pv'    => 16,
-                    'price' => 10500,
-                    'image' => 'images/products/ohekem-pack.jpg'
-                ],
-                (object) [
-                    'name'  => 'Emerald Pack',
-                    'pv'    => 100,
-                    'price' => 54500,
-                    'image' => 'images/products/emerald-pack.jpg'
-                ],
-                (object) [
-                    'name'  => 'Achievers Pack',
-                    'pv'    => 244,
-                    'price' => 132500,
-                    'image' => 'images/products/achievers-pack.jpg'
-                ],
-                (object) [
-                    'name'  => 'Lifestyle Pack',
-                    'pv'    => 500,
-                    'price' => 265500,
-                    'image' => 'images/products/lifestyle-pack.jpg'
-                ],
-            ]);
-        }
+        $products = LandingProduct::where('is_active', 1)
+            ->orderBy('order', 'asc')
+            ->latest()
+            ->limit(8)
+            ->get();
 
-        // Optional featured products
-        if (class_exists('App\Models\LandingProduct')) {
-            $featuredProducts = \App\Models\LandingProduct::where('is_active', true)->limit(6)->get();
-        } else {
-            $featuredProducts = collect();
-        }
-            
-        return view('landing.index', compact('products', 'featuredProducts'));
+        return view('landing.index', compact('products'));
     }
 
     public function about()
     {
         return view('landing.about');
     }
-
-   
 
     public function contact()
     {
@@ -82,7 +40,7 @@ class LandingController extends Controller
             ],
             [
                 'question' => 'What payment methods are accepted?',
-                'answer' => 'We accept bank transfers, online payment gateways, and upline wallet payments.'
+                'answer' => 'We accept bank transfers and online payment gateways.'
             ],
             [
                 'question' => 'How do I withdraw my earnings?',

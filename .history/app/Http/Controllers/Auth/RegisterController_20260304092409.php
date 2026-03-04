@@ -21,10 +21,10 @@ class RegisterController extends Controller
     public function showRegistrationForm()
     {
         $packages = Package::where('is_active', 1)->orderBy('order')->get();
-        $countries = Country::where('is_active', 1)->orderBy('name')->get();
         $productsJs = [];
+        $countries = Country::where('is_active', 1)->orderBy('name')->get();
 
-        return view('auth.register', compact('packages', 'countries', 'productsJs'));
+        return view('auth.register', compact('packages', 'productsJs', 'countries'));
     }
 
     public function register(Request $request)
@@ -58,53 +58,33 @@ class RegisterController extends Controller
             ->first();
 
         if ($existingPlacement) {
-            return back()->withErrors(['placement_position' => 'Position already taken.'])->withInput();
+            return back()->withErrors(['placement_position' => 'This position is already taken.'])->withInput();
         }
 
         DB::beginTransaction();
 
         try {
 
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'address' => $request->address,
-                'password' => Hash::make($request->password),
-                'username' => $this->generateUsername($request->name),
-                'referral_code' => $this->generateReferralCode(),
-                'sponsor_id' => $sponsorUser->id,
-                'placement_id' => $placementUser->id,
-                'placement_position' => $request->placement_position,
-                'package_id' => $request->package_id,
-                'country' => $request->country,
-                'state' => $request->state,
-                'pickup_center_id' => $request->pickup_center_id,
-                'product_id' => $request->product_id,
-                'status' => 'pending_verification',
-                'payment_status' => 'unpaid',
-                'registration_date' => now(),
+            $user = $this->create(
+                $request->all(),
+                $sponsorUser->id,
+                $placementUser->id
+            );
 
-                // All values start at 0
-                'left_count' => 0,
-                'right_count' => 0,
-                'left_pv' => 0,
-                'right_pv' => 0,
-                'total_pv' => 0,
-                'current_pv' => 0,
-                'commission_wallet_balance' => 0,
-                'direct_bonus_total' => 0,
-                'direct_sponsors_count' => 0,
-            ]);
+            // ❌ NO PV
+            // ❌ NO BONUSES
+            // ❌ NO COMMISSIONS
 
             $verificationCode = rand(100000, 999999);
-            $user->verification_code = $verificationCode;
+            $user->verification_code = (string)$verificationCode;
             $user->save();
 
             Mail::to($user->email)
                 ->send(new VerificationCodeMail($verificationCode, $user->name));
 
             Session::put('pending_user_id', $user->id);
+            Session::put('package_id', $request->package_id);
+            Session::put('product_id', $request->product_id);
 
             DB::commit();
 
@@ -115,8 +95,45 @@ class RegisterController extends Controller
             DB::rollBack();
             Log::error('Registration failed: ' . $e->getMessage());
 
-            return back()->withErrors(['general' => 'Registration failed.'])->withInput();
+            return back()->withErrors([
+                'general' => 'Registration failed. Please try again.'
+            ])->withInput();
         }
+    }
+
+    protected function create(array $data, $sponsorId, $placementId)
+    {
+        return User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'],
+            'address' => $data['address'],
+            'password' => Hash::make($data['password']),
+            'username' => $this->generateUsername($data['name']),
+            'referral_code' => $this->generateReferralCode(),
+            'sponsor_id' => $sponsorId,
+            'placement_id' => $placementId,
+            'placement_position' => $data['placement_position'],
+            'package_id' => $data['package_id'],
+            'country' => $data['country'],
+            'state' => $data['state'],
+            'pickup_center_id' => $data['pickup_center_id'],
+            'product_id' => $data['product_id'],
+            'status' => 'pending_verification',
+            'registration_date' => now(),
+
+            // All PV zero at registration
+            'left_count' => 0,
+            'right_count' => 0,
+            'left_pv' => 0,
+            'right_pv' => 0,
+            'total_pv' => 0,
+            'current_pv' => 0,
+
+            'commission_wallet_balance' => 0,
+            'direct_bonus_total' => 0,
+            'direct_sponsors_count' => 0,
+        ]);
     }
 
     private function generateUsername($name)

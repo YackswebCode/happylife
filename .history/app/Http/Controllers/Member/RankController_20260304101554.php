@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Rank;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
+use App\Models\Package;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,20 +20,18 @@ class RankController extends Controller
     {
         $user = Auth::user();
 
-        // Hardcoded highest package ID (Lifestyle)
-        $highestPackageId = 5;
-
-        // Get all active ranks, ordered by level
+        // Get all active ranks
         $ranks = Rank::where('is_active', true)
             ->orderBy('level')
             ->get();
 
-        // Current rank of the user
+        // Current user rank
         $currentRank = $user->rank;
 
-        // Weaker side PV
         $leftPv = $user->left_pv ?? 0;
         $rightPv = $user->right_pv ?? 0;
+
+        // Weaker side PV
         $weakerSidePv = min($leftPv, $rightPv);
 
         // Determine next rank
@@ -47,28 +46,39 @@ class RankController extends Controller
                 ->first();
         }
 
-        // Progress percentage towards next rank
         $progress = 0;
+
         if ($nextRank) {
             $requiredPv = $nextRank->required_pv;
+
             if ($requiredPv > 0) {
-                $progress = round(min(($weakerSidePv / $requiredPv) * 100, 100), 2);
+                $progress = ($weakerSidePv / $requiredPv) * 100;
+                if ($progress > 100) $progress = 100;
+                $progress = round($progress, 2);
             }
         }
 
-        // Count user's direct referrals
+        // Determine the highest package ID
+        $highestPackage = Package::where('is_active', 1)
+            ->orderBy('price', 'desc')
+            ->first();
+        $highestPackageId = $highestPackage ? $highestPackage->id : null;
+
+        // Number of direct referrals
         $directReferrals = $user->direct_sponsors_count ?? 0;
 
-        // Check if user is eligible to claim next rank
+        // Check claim eligibility
         $canClaim = false;
         if ($nextRank) {
-            $canClaim = (
-                $leftPv >= $nextRank->required_pv &&          // Left PV requirement
-                $rightPv >= $nextRank->required_pv &&         // Right PV requirement
-                $user->package_id == $highestPackageId &&     // Highest package requirement
-                $directReferrals >= 2 &&                      // Minimum 2 direct referrals
-                (!$currentRank || $currentRank->level < $nextRank->level) // Rank progression
-            );
+            if (
+                $leftPv >= $nextRank->required_pv &&
+                $rightPv >= $nextRank->required_pv &&
+                $user->package_id == $highestPackageId &&
+                $directReferrals >= 2 &&
+                (!$currentRank || $currentRank->level < $nextRank->level)
+            ) {
+                $canClaim = true;
+            }
         }
 
         return view('member.ranks.index', compact(
@@ -85,14 +95,11 @@ class RankController extends Controller
     }
 
     /**
-     * Claim the achieved rank and receive rewards.
+     * Claim rank reward
      */
     public function claim(Request $request)
     {
         $user = Auth::user();
-
-        // Hardcoded highest package ID
-        $highestPackageId = 5;
 
         $currentRank = $user->rank;
 
@@ -115,9 +122,17 @@ class RankController extends Controller
 
         $leftPv = $user->left_pv ?? 0;
         $rightPv = $user->right_pv ?? 0;
+
+        // Highest package check
+        $highestPackage = Package::where('is_active', 1)
+            ->orderBy('price', 'desc')
+            ->first();
+        $highestPackageId = $highestPackage ? $highestPackage->id : null;
+
+        // Direct referrals
         $directReferrals = $user->direct_sponsors_count ?? 0;
 
-        // Validate all 4 conditions
+        // Validate conditions
         if ($leftPv < $nextRank->required_pv) {
             return redirect()->route('member.ranks.index')
                 ->with('error', 'Your LEFT leg has not met the required PV.');
@@ -130,7 +145,7 @@ class RankController extends Controller
 
         if ($user->package_id != $highestPackageId) {
             return redirect()->route('member.ranks.index')
-                ->with('error', 'You must be on the highest package (Lifestyle) to claim this rank.');
+                ->with('error', 'You must be on the highest package to claim this rank.');
         }
 
         if ($directReferrals < 2) {
@@ -146,35 +161,36 @@ class RankController extends Controller
         $reward = $nextRank->cash_reward ?? 0;
 
         DB::transaction(function () use ($user, $nextRank, $reward) {
-            // Update user's rank and bonus balances
+
+            // Update User Rank
             $user->rank_id = $nextRank->id;
             $user->rank_bonus_total += $reward;
             $user->rank_wallet_balance += $reward;
             $user->save();
 
-            // Get or create rank wallet
+            // Rank Wallet
             $rankWallet = Wallet::firstOrCreate(
                 ['user_id' => $user->id, 'type' => 'rank'],
                 ['balance' => 0, 'locked_balance' => 0]
             );
 
-            // Credit wallet
+            // Credit Wallet
             $rankWallet->balance += $reward;
             $rankWallet->save();
 
-            // Create transaction record
+            // Transaction Record
             WalletTransaction::create([
-                'wallet_id'   => $rankWallet->id,
-                'user_id'     => $user->id,
-                'type'        => WalletTransaction::TYPE_CREDIT,
-                'amount'      => $reward,
+                'wallet_id' => $rankWallet->id,
+                'user_id' => $user->id,
+                'type' => WalletTransaction::TYPE_CREDIT,
+                'amount' => $reward,
                 'description' => 'Rank Achievement Bonus - ' . $nextRank->name,
-                'reference'   => 'RANK-' . $user->id . '-' . time(),
-                'status'      => WalletTransaction::STATUS_COMPLETED,
-                'metadata'    => [
-                    'rank_id'   => $nextRank->id,
-                    'rank_name' => $nextRank->name,
-                ],
+                'reference' => 'RANK-' . $user->id . '-' . time(),
+                'status' => WalletTransaction::STATUS_COMPLETED,
+                'metadata' => [
+                    'rank_id' => $nextRank->id,
+                    'rank_name' => $nextRank->name
+                ]
             ]);
         });
 
