@@ -47,25 +47,6 @@
                                             </span>
                                         @enderror
                                     </div>
-                                    <!-- Gender -->
-                                    <div class="mb-4">
-                                        <label for="gender" class="form-label fw-semibold">Gender *</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-light border-end-0">
-                                                <i class="bi bi-gender-ambiguous text-muted"></i>
-                                            </span>
-                                            <select name="gender" id="gender" class="form-select @error('gender') is-invalid @enderror" required>
-                                                <option value="" selected disabled>Select gender</option>
-                                                <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Male</option>
-                                                <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Female</option>
-                                            </select>
-                                        </div>
-                                        @error('gender')
-                                            <span class="invalid-feedback d-block" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
-                                    </div>
 
                                     <!-- Email -->
                                     <div class="mb-4">

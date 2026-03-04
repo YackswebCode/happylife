@@ -76,19 +76,6 @@
                         @enderror
                     </div>
 
-                    <!-- Gender (NEW) -->
-                    <div class="mb-3">
-                        <label for="gender" class="form-label fw-semibold">Gender</label>
-                        <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender" required>
-                            <option value="" disabled>Select gender</option>
-                            <option value="male" {{ old('gender', $user->gender) == 'male' ? 'selected' : '' }}>Male</option>
-                            <option value="female" {{ old('gender', $user->gender) == 'female' ? 'selected' : '' }}>Female</option>
-                        </select>
-                        @error('gender')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
                     <!-- Address -->
                     <div class="mb-3">
                         <label for="address" class="form-label fw-semibold">Address</label>

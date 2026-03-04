@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/Member/WithdrawController.php
 
 namespace App\Http\Controllers\Member;
 
@@ -20,9 +21,6 @@ class WithdrawController extends Controller
     {
         $user = Auth::user();
 
-        // Check if user has approved KYC
-        $kycApproved = $user->kycs()->where('status', 'approved')->exists();
-
         // Get both wallet balances from users table
         $commissionBalance = $user->commission_wallet_balance ?? 0;
         $rankBalance       = $user->rank_wallet_balance ?? 0;
@@ -42,8 +40,7 @@ class WithdrawController extends Controller
             'commissionBalance',
             'rankBalance',
             'pendingWithdrawal',
-            'recentWithdrawals',
-            'kycApproved'
+            'recentWithdrawals'
         ));
     }
 
@@ -53,12 +50,6 @@ class WithdrawController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-
-        // KYC check
-        $kycApproved = $user->kycs()->where('status', 'approved')->exists();
-        if (!$kycApproved) {
-            return back()->with('error', 'You must have an approved KYC to make a withdrawal request.');
-        }
 
         // Check for existing pending withdrawal (any wallet)
         $pendingExists = Withdrawal::where('user_id', $user->id)

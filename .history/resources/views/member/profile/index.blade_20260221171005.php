@@ -96,21 +96,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Gender Row (NEW) -->
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-wrapper bg-light-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                <i class="bi bi-gender-ambiguous text-primary"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted d-block">Gender</small>
-                                <strong>{{ ucfirst($user->gender) ?? 'Not specified' }}</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 
                 <div class="row mb-3">
                     <div class="col-md-6">
@@ -137,7 +122,7 @@
                     </div>
                 </div>
                 
-                <!-- Address Row -->
+                <!-- Address Row (NEW) -->
                 <div class="row mb-3">
                     <div class="col-md-12">
                         <div class="d-flex align-items-center mb-3">

@@ -30,7 +30,6 @@
                 </div>
 
                 @if(isset($pendingWithdrawal) && $pendingWithdrawal)
-                    <!-- Pending withdrawal warning -->
                     <div class="alert alert-warning d-flex align-items-center">
                         <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
                         <div>
@@ -40,18 +39,7 @@
                             <a href="{{ route('member.withdraw.history') }}" class="alert-link ms-2">View Status</a>
                         </div>
                     </div>
-                @elseif(!$kycApproved)
-                    <!-- KYC not approved warning -->
-                    <div class="alert alert-danger d-flex align-items-center">
-                        <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
-                        <div>
-                            <strong>KYC Verification Required!</strong><br>
-                            You must have an approved KYC before you can withdraw funds.
-                            <a href="{{ route('member.kyc.index') }}" class="alert-link">Submit KYC</a> or check your KYC status.
-                        </div>
-                    </div>
                 @else
-                    <!-- Withdrawal form (only shown if KYC approved and no pending) -->
                     <form action="{{ route('member.withdraw.store') }}" method="POST" id="withdrawForm">
                         @csrf
                         <div class="row g-3">
@@ -147,7 +135,7 @@
             </div>
         </div>
 
-        <!-- Sidebar: Recent Withdrawals (always visible) -->
+        <!-- Sidebar: Recent Withdrawals -->
         <div class="col-lg-4">
             <div class="card product-card p-4">
                 <h5 class="fw-bold text-happylife-dark border-bottom pb-3">

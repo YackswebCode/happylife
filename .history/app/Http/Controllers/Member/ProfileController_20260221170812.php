@@ -76,7 +76,6 @@ class ProfileController extends Controller
                 Rule::unique('users')->ignore($user->id),
             ],
             'phone'   => 'nullable|string|max:20',
-            'gender'  => 'required|in:male,female',   // <-- added gender validation
             'address' => 'nullable|string|max:500',
             'country' => 'nullable|exists:countries,id',
             'state'   => 'nullable|exists:states,id',
@@ -87,7 +86,6 @@ class ProfileController extends Controller
         $user->name    = $request->name;
         $user->email   = $request->email;
         $user->phone   = $request->phone;
-        $user->gender  = $request->gender;   // <-- save gender
         $user->address = $request->address;
 
         // Convert selected country ID to country name
