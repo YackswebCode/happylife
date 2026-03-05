@@ -179,7 +179,7 @@
                         <i class="bi bi-geo-alt-fill me-2"></i> Need Help?
                     </h5>
                     <p class="text-secondary">Can't find your state or center? Contact our support team.</p>
-                    <a href="{{ route('member.support.index') }}" class="btn btn-outline-danger w-100">
+                    <a href="{{ route('contact') }}" class="btn btn-outline-happylife-teal w-100">
                         <i class="bi bi-headset me-2"></i> Contact Support
                     </a>
                 </div>

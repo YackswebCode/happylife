@@ -125,19 +125,18 @@ class RegisterController extends Controller
         }
     }
 
-  private function generateUsername($name)
-    {
-        $numbers = random_int(1000, 9999); // 4 unique numbers
-        $base = 'hp_' . $numbers . '_' . Str::slug($name, '');
-        $username = $base;
-        $counter = 1;
-
-        while (User::where('username', $username)->exists()) {
-            $username = $base . $counter++;
+    private function generateUsername($name)
+        {
+            $base = 'hp_' . Str::slug($name, '');
+            $username = $base;
+            $counter = 1;
+        
+            while (User::where('username', $username)->exists()) {
+                $username = $base . $counter++;
+            }
+        
+            return $username;
         }
-
-        return $username;
-    }
 
     private function generateReferralCode()
     {

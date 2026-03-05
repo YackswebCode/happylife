@@ -124,6 +124,9 @@
                                 <i class="bi bi-gift me-1"></i> Direct Bonus: ₦{{ number_format($package->direct_bonus_amount, 2) }}
                             </small>
                             <small class="text-secondary d-block">
+                                <i class="bi bi-arrow-up-circle me-1"></i> Upgrade Bonus: ₦{{ number_format($package->upgrade_bonus_amount, 2) }}
+                            </small>
+                            <small class="text-secondary d-block">
                                 <i class="bi bi-trophy me-1"></i> Daily Pairing Cap: ₦{{ number_format($package->pairing_cap, 2) }}
                             </small>
                         </div>

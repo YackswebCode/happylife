@@ -21,18 +21,18 @@
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
 
-                        <!-- username Input -->
+                        <!-- Email Input -->
                         <div class="mb-4">
-                            <label for="username" class="form-label fw-semibold">Username</label>
+                            <label for="email" class="form-label fw-semibold">Email Address or Username</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">
                                     <i class="bi bi-envelope text-muted"></i>
                                 </span>
-                                <input id="username" type="username" class="form-control @error('username') is-invalid @enderror" 
-                                       name="username" value="{{ old('username') }}" required autocomplete="username" autofocus
-                                       placeholder="Enter your username or username">
+                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" 
+                                       name="email" value="{{ old('email') }}" required autocomplete="email" autofocus
+                                       placeholder="Enter your email or username">
                             </div>
-                            @error('username')
+                            @error('email')
                                 <span class="invalid-feedback d-block" role="alert">
                                     <strong>{{ $message }}</strong>
                                 </span>
@@ -169,13 +169,13 @@
         const form = document.querySelector('form');
         if (form) {
             form.addEventListener('submit', function(e) {
-                const username = document.getElementById('username');
+                const email = document.getElementById('email');
                 const password = document.getElementById('password');
                 
-                if (!username.value || !password.value) {
+                if (!email.value || !password.value) {
                     e.preventDefault();
-                    if (!username.value) {
-                        username.classList.add('is-invalid');
+                    if (!email.value) {
+                        email.classList.add('is-invalid');
                     }
                     if (!password.value) {
                         password.classList.add('is-invalid');
