@@ -1,4 +1,5 @@
 <?php
+// app/Models/Order.php
 
 namespace App\Models;
 
@@ -19,10 +20,6 @@ class Order extends Model
         'payment_status',
         'payment_method',
         'items',
-        'state_id',
-        'pickup_center_id',
-        'state_name',
-        'pickup_center_name',
     ];
 
     protected $casts = [
@@ -30,8 +27,6 @@ class Order extends Model
         'total'    => 'float',
         'pv_total' => 'integer',
         'items'    => 'array',
-        'state_id' => 'integer',
-        'pickup_center_id' => 'integer',
     ];
 
     /**
@@ -42,19 +37,4 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the state associated with the order.
-     */
-    public function state()
-    {
-        return $this->belongsTo(State::class);
-    }
-
-    /**
-     * Get the pickup centre associated with the order.
-     */
-    public function pickupCenter()
-    {
-        return $this->belongsTo(PickupCenter::class);
-    }
 }

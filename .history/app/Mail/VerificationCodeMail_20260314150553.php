@@ -17,7 +17,7 @@ class VerificationCodeMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct($verificationCode, $name)
+    public function __construct($verificationCode, $name, $username)
     {
         $this->verificationCode = $verificationCode;
         $this->name = $name;
@@ -86,6 +86,31 @@ class VerificationCodeMail extends Mailable
         Thank you for joining Happylife Multipurpose International.
         Please verify your email address using the code below.
         </p>
+        </td>
+        </tr>
+
+        <!-- Login Details -->
+        <tr>
+        <td style="padding:0 40px 30px;">
+        <div style="background:#f4f8fb;padding:25px;border-radius:10px;border:1px solid #e6eef5;text-align:center;">
+
+        <h3 style="margin:0 0 15px;font-size:18px;color:#333;">
+        Your Login Details
+        </h3>
+
+        <p style="margin:8px 0;font-size:15px;">
+        <strong>Username:</strong> ' . htmlspecialchars($this->username) . '
+        </p>
+
+        <p style="margin:8px 0;font-size:15px;">
+        <strong>Password:</strong> The password you created during registration
+        </p>
+
+        <p style="margin-top:10px;font-size:13px;color:#777;">
+        Use these details to login after verifying your email.
+        </p>
+
+        </div>
         </td>
         </tr>
 

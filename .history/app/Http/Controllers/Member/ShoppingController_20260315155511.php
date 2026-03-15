@@ -8,8 +8,6 @@ use App\Models\ProductCategory;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
 use App\Models\Order;
-use App\Models\State;
-use App\Models\PickupCenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -103,10 +101,7 @@ class ShoppingController extends Controller
             }
         }
 
-        // Load active states for dropdown
-        $states = State::where('is_active', true)->orderBy('name')->get();
-
-        return view('member.shopping.cart', compact('cartItems', 'subtotal', 'bonus_earned', 'states'));
+        return view('member.shopping.cart', compact('cartItems', 'subtotal', 'bonus_earned'));
     }
 
     /**
@@ -200,20 +195,9 @@ class ShoppingController extends Controller
     }
 
     /**
-     * AJAX: Get pickup centres for a given state.
-     */
-    public function getPickupCenters($stateId)
-    {
-        $centers = PickupCenter::where('state_id', $stateId)
-                    ->where('is_active', true)
-                    ->get(['id', 'name', 'address']);
-
-        return response()->json($centers);
-    }
-
-    /**
      * Process checkout – deduct from shopping wallet,
-     * add repurchase bonus, create order, store state & pickup centre.
+     * add repurchase bonus to shopping wallet AND to user's commission_wallet_balance,
+     * create order, and update repurchase_bonus_total.
      */
     public function checkout(Request $request)
     {
@@ -223,12 +207,6 @@ class ShoppingController extends Controller
         if (empty($cart)) {
             return redirect()->route('member.shopping.cart')->with('error', 'Your cart is empty.');
         }
-
-        // Validate state and pickup centre
-        $request->validate([
-            'state_id'          => 'required|exists:states,id',
-            'pickup_center_id'  => 'required|exists:pickup_centers,id',
-        ]);
 
         $productIds = array_keys($cart);
         $products = RepurchaseProduct::whereIn('id', $productIds)->get()->keyBy('id');
@@ -251,8 +229,9 @@ class ShoppingController extends Controller
             }
         }
 
-        // Shopping wallet check
+        // Shopping wallet – auto‑creates if missing
         $shoppingWallet = $user->shoppingWallet;
+
         if (!$shoppingWallet || $shoppingWallet->balance < $subtotal) {
             return redirect()->route('member.shopping.cart')
                 ->with('error', 'Insufficient shopping wallet balance. Please fund your wallet.');
@@ -262,10 +241,6 @@ class ShoppingController extends Controller
             return $item['quantity'] * 250;
         });
 
-        // Fetch state and pickup centre names for record
-        $state = State::find($request->state_id);
-        $pickupCenter = PickupCenter::find($request->pickup_center_id);
-
         DB::beginTransaction();
 
         try {
@@ -273,24 +248,20 @@ class ShoppingController extends Controller
             $shoppingWallet->balance -= $subtotal;
             $shoppingWallet->save();
 
-            // 2. Create order with location data
+            // 2. Create order
             $order = Order::create([
-                'user_id'            => $user->id,
-                'order_number'       => 'ORD-' . strtoupper(uniqid()),
-                'subtotal'           => $subtotal,
-                'total'              => $subtotal,
-                'pv_total'           => $totalPv,
-                'status'             => 'completed',
-                'payment_status'     => 'paid',
-                'payment_method'     => 'shopping_wallet',
-                'items'              => json_encode($items),
-                'state_id'           => $state->id,
-                'pickup_center_id'   => $pickupCenter->id,
-                'state_name'         => $state->name,
-                'pickup_center_name' => $pickupCenter->name,
+                'user_id'       => $user->id,
+                'order_number'  => 'ORD-' . strtoupper(uniqid()),
+                'subtotal'      => $subtotal,
+                'total'         => $subtotal,
+                'pv_total'      => $totalPv,
+                'status'        => 'completed',
+                'payment_status'=> 'paid',
+                'payment_method'=> 'shopping_wallet',
+                'items'         => json_encode($items),
             ]);
 
-            // 3. Add repurchase bonus to shopping wallet
+            // 3. Add repurchase bonus to shopping wallet (for future purchases)
             $shoppingWallet->balance += $bonusAmount;
             $shoppingWallet->save();
 
@@ -318,12 +289,12 @@ class ShoppingController extends Controller
                 'metadata'    => json_encode(['order_id' => $order->id]),
             ]);
 
-            // 6. Update user: repurchase_bonus_total and commission wallet
+            // 🆕 6. Update users table: track repurchase bonus total and add to commission wallet balance
             $user->repurchase_bonus_total += $bonusAmount;
             $user->commission_wallet_balance += $bonusAmount;
             $user->save();
 
-            // 7. Clear cart
+            // 7. Clear the cart
             Session::forget('cart');
 
             DB::commit();
@@ -347,18 +318,15 @@ class ShoppingController extends Controller
      * Display order receipt.
      */
     public function receipt(Order $order)
-{
-    if ($order->user_id !== Auth::id()) {
-        abort(403, 'Unauthorized access.');
+    {
+        if ($order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $bonus_earned = session('bonus_earned', 0);
+
+        return view('member.shopping.receipt', compact('order', 'bonus_earned'));
     }
-
-    // Eager load the pickup center to get its address
-    $order->load('pickupCenter');
-
-    $bonus_earned = session('bonus_earned', 0);
-
-    return view('member.shopping.receipt', compact('order', 'bonus_earned'));
-}
 
     /**
      * Private helper: calculate current cart totals for AJAX responses.

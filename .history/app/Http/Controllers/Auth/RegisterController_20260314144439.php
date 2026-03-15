@@ -106,7 +106,8 @@ class RegisterController extends Controller
             Mail::to($user->email)
                 ->send(new VerificationCodeMail(
                     $verificationCode,
-                    $user->name
+                    $user->name,
+                    $user->username
                 ));
 
             Session::put('pending_user_id', $user->id);
@@ -126,7 +127,8 @@ class RegisterController extends Controller
 
   private function generateUsername($name)
     {
-        $base = 'happylif_' . Str::slug($name, '');
+        $numbers = random_int(1000, 9999); // 4 unique numbers
+        $base = 'hp_' . $numbers . '_' . Str::slug($name, '');
         $username = $base;
         $counter = 1;
 

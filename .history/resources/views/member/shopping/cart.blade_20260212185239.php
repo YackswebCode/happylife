@@ -87,26 +87,6 @@
             <div class="col-lg-4">
                 <div class="card product-card p-4">
                     <h5 class="fw-bold text-happylife-dark border-bottom pb-3">Order Summary</h5>
-                    
-                    <!-- State & Pickup Centre Selection -->
-                    <div class="mb-3">
-                        <label for="state" class="form-label">Select State <span class="text-danger">*</span></label>
-                        <select name="state_id" id="state" class="form-select" required>
-                            <option value="">Choose state...</option>
-                            @foreach($states as $state)
-                                <option value="{{ $state->id }}">{{ $state->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="pickup_center" class="form-label">Select Pickup Centre <span class="text-danger">*</span></label>
-                        <select name="pickup_center_id" id="pickup_center" class="form-select" required disabled>
-                            <option value="">First select a state</option>
-                        </select>
-                        <div id="pickup-details" class="mt-2 small text-muted"></div>
-                    </div>
-
-                    <!-- Summary Rows -->
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-secondary">Subtotal</span>
                         <span class="fw-bold subtotal-amount">₦{{ number_format($subtotal, 2) }}</span>
@@ -140,10 +120,6 @@
 
                     <form action="{{ route('member.shopping.checkout') }}" method="POST">
                         @csrf
-                        <!-- Hidden fields to carry selected values -->
-                        <input type="hidden" name="state_id" id="hidden_state_id" value="">
-                        <input type="hidden" name="pickup_center_id" id="hidden_pickup_center_id" value="">
-
                         <button type="submit" class="btn btn-happylife-red btn-danger btn-lg w-100 py-3 checkout-btn"
                                 {{ auth()->user()->shopping_wallet_balance < $subtotal ? 'disabled' : '' }}>
                             Proceed to Checkout
@@ -192,6 +168,7 @@
                 const submitBtn = form.querySelector('.update-btn');
                 const originalText = submitBtn.innerText;
 
+                // Loading state
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Updating...';
 
@@ -201,7 +178,7 @@
                         body: formData,
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json'
+                            'Accept': 'application/json'   // ✅ CRITICAL
                         }
                     });
 
@@ -210,7 +187,9 @@
                         try {
                             const errorData = await response.json();
                             errorMsg = errorData.message || errorMsg;
-                        } catch (e) {}
+                        } catch (e) {
+                            // Not JSON
+                        }
                         throw new Error(errorMsg);
                     }
 
@@ -246,7 +225,7 @@
                         body: formData,
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json'
+                            'Accept': 'application/json'   // ✅ CRITICAL
                         }
                     });
 
@@ -267,7 +246,7 @@
                         showToast('Item removed', 'success');
 
                         if (data.cart_count === 0) {
-                            location.reload();
+                            location.reload(); // reload to show empty state
                         }
                     } else {
                         showToast(data.message || 'Remove failed', 'danger');
@@ -279,57 +258,7 @@
             });
         });
 
-        // ---------- State & Pickup Centre Handling ----------
-        const stateSelect = document.getElementById('state');
-        const pickupSelect = document.getElementById('pickup_center');
-        const pickupDetails = document.getElementById('pickup-details');
-        const hiddenState = document.getElementById('hidden_state_id');
-        const hiddenPickup = document.getElementById('hidden_pickup_center_id');
-
-        stateSelect.addEventListener('change', function() {
-            const stateId = this.value;
-            hiddenState.value = stateId;
-
-            if (!stateId) {
-                pickupSelect.disabled = true;
-                pickupSelect.innerHTML = '<option value="">First select a state</option>';
-                pickupDetails.innerHTML = '';
-                hiddenPickup.value = '';
-                return;
-            }
-
-            fetch(`/member/shopping/pickup-centers/${stateId}`)
-                .then(response => response.json())
-                .then(centers => {
-                    pickupSelect.disabled = false;
-                    pickupSelect.innerHTML = '<option value="">Select pickup centre</option>';
-                    centers.forEach(center => {
-                        pickupSelect.innerHTML += `<option value="${center.id}" data-address="${center.address}">${center.name}</option>`;
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading pickup centres:', error);
-                    pickupSelect.disabled = true;
-                    pickupSelect.innerHTML = '<option value="">Error loading centres</option>';
-                });
-        });
-
-        pickupSelect.addEventListener('change', function() {
-            const selected = this.options[this.selectedIndex];
-            const address = selected.getAttribute('data-address');
-            pickupDetails.innerHTML = address ? `<strong>Address:</strong> ${address}` : '';
-            hiddenPickup.value = this.value;
-        });
-
-        // Validate form before submission
-        document.querySelector('form[action$="checkout"]').addEventListener('submit', function(e) {
-            if (!hiddenState.value || !hiddenPickup.value) {
-                e.preventDefault();
-                alert('Please select both state and pickup centre.');
-            }
-        });
-
-        // ---------- Helper Functions (unchanged) ----------
+        // ---------- Helper Functions ----------
         function updateCartTotals(data) {
             if (data.subtotal !== undefined) {
                 document.querySelector('.subtotal-amount').innerText = '₦' + formatNumber(data.subtotal);

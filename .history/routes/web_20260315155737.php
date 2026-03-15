@@ -80,6 +80,7 @@ Route::prefix('member')->name('member.')->middleware(['auth', 'verified'])->grou
 
     // Genealogy
     Route::get('/genealogy', [GenealogyController::class, 'index'])->name('genealogy.index');
+    // ✅ Added dynamic children endpoint for infinite scrolling
     Route::get('/genealogy/children', [GenealogyController::class, 'getChildren'])->name('genealogy.children');
 
     // Matching Bonus
@@ -91,18 +92,11 @@ Route::prefix('member')->name('member.')->middleware(['auth', 'verified'])->grou
     // Announcements
     Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
 
-    // Shopping (All cart & checkout routes)
-    Route::prefix('shopping')->name('shopping.')->group(function () {
-        Route::get('/', [App\Http\Controllers\Member\ShoppingController::class, 'index'])->name('index');
-        Route::get('/cart', [App\Http\Controllers\Member\ShoppingController::class, 'cart'])->name('cart');
-        Route::post('/cart/add', [App\Http\Controllers\Member\ShoppingController::class, 'addToCart'])->name('cart.add');
-        Route::post('/cart/update', [App\Http\Controllers\Member\ShoppingController::class, 'updateCart'])->name('cart.update');
-        Route::post('/cart/remove', [App\Http\Controllers\Member\ShoppingController::class, 'removeFromCart'])->name('cart.remove');
-        Route::post('/checkout', [App\Http\Controllers\Member\ShoppingController::class, 'checkout'])->name('checkout');
-        Route::get('/receipt/{order}', [App\Http\Controllers\Member\ShoppingController::class, 'receipt'])->name('receipt');
-        Route::get('/pickup-centers/{state}', [App\Http\Controllers\Member\ShoppingController::class, 'getPickupCenters'])->name('pickup-centers');
-    });
+    // Shopping
+    Route::get('/shopping/receipt/{order}', [App\Http\Controllers\Member\ShoppingController::class, 'receipt'])->name('shopping.receipt');
 
+    Route::get('/member/shopping/pickup-centers/{state}', [ShoppingController::class, 'getPickupCenters'])
+    ->name('member.shopping.pickup-centers');
     // Profile
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [App\Http\Controllers\Member\ProfileController::class, 'index'])->name('index');

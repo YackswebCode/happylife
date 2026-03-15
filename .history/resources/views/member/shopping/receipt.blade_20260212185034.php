@@ -37,21 +37,6 @@
                         <span class="text-secondary">Repurchase Bonus Earned:</span>
                         <span class="fw-bold text-happylife-teal">+ ₦{{ number_format($bonus_earned, 2) }}</span>
                     </div>
-
-                    <!-- 🆕 Pickup Information Section -->
-                    <hr class="my-3">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-secondary">Pickup State:</span>
-                        <span class="fw-bold">{{ $order->state_name }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-secondary">Pickup Centre:</span>
-                        <span class="fw-bold">{{ $order->pickup_center_name }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span class="text-secondary">Centre Address:</span>
-                        <span class="fw-bold">{{ $order->pickupCenter->address ?? 'N/A' }}</span>
-                    </div>
                 </div>
 
                 <h5 class="fw-bold text-happylife-dark mt-4 mb-3">Order Summary</h5>

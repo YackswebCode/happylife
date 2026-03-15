@@ -80,7 +80,6 @@ Route::prefix('member')->name('member.')->middleware(['auth', 'verified'])->grou
 
     // Genealogy
     Route::get('/genealogy', [GenealogyController::class, 'index'])->name('genealogy.index');
-    Route::get('/genealogy/children', [GenealogyController::class, 'getChildren'])->name('genealogy.children');
 
     // Matching Bonus
     Route::get('/matching-bonus', [App\Http\Controllers\Member\MatchingController::class, 'index'])->name('matching.index');
@@ -91,17 +90,8 @@ Route::prefix('member')->name('member.')->middleware(['auth', 'verified'])->grou
     // Announcements
     Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
 
-    // Shopping (All cart & checkout routes)
-    Route::prefix('shopping')->name('shopping.')->group(function () {
-        Route::get('/', [App\Http\Controllers\Member\ShoppingController::class, 'index'])->name('index');
-        Route::get('/cart', [App\Http\Controllers\Member\ShoppingController::class, 'cart'])->name('cart');
-        Route::post('/cart/add', [App\Http\Controllers\Member\ShoppingController::class, 'addToCart'])->name('cart.add');
-        Route::post('/cart/update', [App\Http\Controllers\Member\ShoppingController::class, 'updateCart'])->name('cart.update');
-        Route::post('/cart/remove', [App\Http\Controllers\Member\ShoppingController::class, 'removeFromCart'])->name('cart.remove');
-        Route::post('/checkout', [App\Http\Controllers\Member\ShoppingController::class, 'checkout'])->name('checkout');
-        Route::get('/receipt/{order}', [App\Http\Controllers\Member\ShoppingController::class, 'receipt'])->name('receipt');
-        Route::get('/pickup-centers/{state}', [App\Http\Controllers\Member\ShoppingController::class, 'getPickupCenters'])->name('pickup-centers');
-    });
+    // Shopping
+    Route::get('/shopping/receipt/{order}', [App\Http\Controllers\Member\ShoppingController::class, 'receipt'])->name('shopping.receipt');
 
     // Profile
     Route::prefix('profile')->name('profile.')->group(function () {
@@ -139,14 +129,13 @@ Route::prefix('member')->name('member.')->middleware(['auth', 'verified'])->grou
 
         // Cable TV
         Route::get('/cable', [VTUController::class, 'cable'])->name('cable');
-        Route::get('/cable-plans', [VTUController::class, 'getCablePlans'])->name('cable.plans');
+        Route::get('/cable-plans', [VTUController::class, 'getCablePlans'])->name('cable.plans'); // ✅ must exist
         Route::post('/cable/purchase', [VTUController::class, 'purchaseCable'])->name('cable.purchase');
         Route::post('/validate-smartcard', [VTUController::class, 'validateSmartCard'])->name('validate.smartcard');
 
-        // Electricity
-        Route::get('/electricity', [VTUController::class, 'electricity'])->name('electricity');
-        Route::post('/electricity/validate', [VTUController::class, 'validateMeter'])->name('electricity.validate');
-        Route::post('/electricity/purchase', [VTUController::class, 'purchaseElectricity'])->name('electricity.purchase');
+         Route::get('/electricity', [VTUController::class, 'electricity'])->name('electricity');
+    Route::post('/electricity/validate', [VTUController::class, 'validateMeter'])->name('electricity.validate');
+    Route::post('/electricity/purchase', [VTUController::class, 'purchaseElectricity'])->name('electricity.purchase');
     });
 
     // Withdrawals
@@ -160,6 +149,9 @@ Route::prefix('member')->name('member.')->middleware(['auth', 'verified'])->grou
     // KYC
     Route::get('/kyc', [App\Http\Controllers\Member\KycController::class, 'index'])->name('kyc.index');
     Route::post('/kyc/store', [App\Http\Controllers\Member\KycController::class, 'store'])->name('kyc.store');
+    
+    Route::get('/member/genealogy', [GenealogyController::class, 'index'])->name('member.genealogy.index');
+    Route::get('/member/genealogy/children', [GenealogyController::class, 'getChildren'])->name('member.genealogy.children');
 });
 
 /*

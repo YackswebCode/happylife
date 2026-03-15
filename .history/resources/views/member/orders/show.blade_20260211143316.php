@@ -68,7 +68,7 @@
             </div>
         </div>
 
-        <!-- Customer Information Card -->
+        <!-- Customer Info Card (Optional) -->
         <div class="col-md-6">
             <div class="card product-card h-100 p-4">
                 <h5 class="fw-bold text-happylife-dark border-bottom pb-3 mb-3">
@@ -90,31 +90,6 @@
                 </table>
             </div>
         </div>
-
-        <!-- 🆕 Pickup Information Card (only if pickup data exists) -->
-        @if($order->state_name && $order->pickup_center_name)
-        <div class="col-12">
-            <div class="card product-card p-4">
-                <h5 class="fw-bold text-happylife-dark border-bottom pb-3 mb-3">
-                    <i class="bi bi-geo-alt-fill me-2" style="color: var(--happylife-teal);"></i> Pickup Information
-                </h5>
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="text-secondary">State:</div>
-                        <div class="fw-bold">{{ $order->state_name }}</div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="text-secondary">Pickup Centre:</div>
-                        <div class="fw-bold">{{ $order->pickup_center_name }}</div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="text-secondary">Centre Address:</div>
-                        <div class="fw-bold">{{ optional($order->pickupCenter)->address ?? 'Address not available' }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
 
         <!-- Order Items -->
         <div class="col-12">

@@ -347,18 +347,15 @@ class ShoppingController extends Controller
      * Display order receipt.
      */
     public function receipt(Order $order)
-{
-    if ($order->user_id !== Auth::id()) {
-        abort(403, 'Unauthorized access.');
+    {
+        if ($order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $bonus_earned = session('bonus_earned', 0);
+
+        return view('member.shopping.receipt', compact('order', 'bonus_earned'));
     }
-
-    // Eager load the pickup center to get its address
-    $order->load('pickupCenter');
-
-    $bonus_earned = session('bonus_earned', 0);
-
-    return view('member.shopping.receipt', compact('order', 'bonus_earned'));
-}
 
     /**
      * Private helper: calculate current cart totals for AJAX responses.

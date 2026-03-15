@@ -31,9 +31,6 @@ class OrderController extends Controller
             abort(403);
         }
 
-        // Eager load the pickup center to get its address
-        $order->load('pickupCenter');
-
         return view('member.orders.show', compact('order'));
     }
 }

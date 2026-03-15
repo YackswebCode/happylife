@@ -70,11 +70,8 @@ class PaymentController extends Controller
             $user->activated_at = now();
             $user->save();
 
-            // Update placement counts for the immediate parent (still useful for some views)
+            // Update placement counts for the immediate parent
             $this->updatePlacementUserCounts($user);
-
-            // NEW: Update left_count / right_count for ALL ancestors along the binary path
-            $this->updateBinaryTreeCounts($user);
 
             // Distribute PV up the binary and unilevel trees
             $this->updateAllPvCounts($user, $package);
@@ -117,52 +114,6 @@ class PaymentController extends Controller
         }
 
         $parent->save();
-    }
-
-    /**
-     * NEW: Increment left_count or right_count for all ancestors in the binary tree.
-     */
-    private function updateBinaryTreeCounts($user)
-    {
-        $current = $user;
-
-        while ($current->placement_id) {
-            $parent = User::find($current->placement_id);
-            if (!$parent) break;
-
-            // Determine which leg of the parent this user belongs to
-            $leg = $this->getLegForAncestor($parent, $user);
-
-            if ($leg === 'left') {
-                $parent->left_count++;
-            } else {
-                $parent->right_count++;
-            }
-            $parent->save();
-
-            $current = $parent;
-        }
-    }
-
-    /**
-     * Helper: determine which leg (left/right) of an ancestor a descendant belongs to.
-     */
-    private function getLegForAncestor($ancestor, $descendant)
-    {
-        if ($ancestor->id === $descendant->id) {
-            return $descendant->placement_position; // should not happen here
-        }
-
-        $path = [];
-        $current = $descendant;
-        while ($current->placement_id && $current->id !== $ancestor->id) {
-            $parent = User::find($current->placement_id);
-            if (!$parent) break;
-            $path[] = $current->placement_position;
-            $current = $parent;
-        }
-        // The last direction in the path is the leg under ancestor
-        return array_pop($path);
     }
 
     /**
