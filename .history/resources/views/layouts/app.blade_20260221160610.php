@@ -4,22 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    @php
-        use App\Models\Setting;
-        $siteName = Setting::where('key', 'site_name')->value('value') ?? 'Happylife Multipurpose Int\'l';
-        $logo = Setting::where('key', 'logo')->value('value');
-        $favicon = Setting::where('key', 'favicon')->value('value');
-    @endphp
-
-    <title>@yield('title', $siteName)</title>
-
-    <!-- Favicon -->
-    @if($favicon)
-        <link rel="icon" type="image/x-icon" href="{{ asset('storage/'.$favicon) }}">
-    @else
-        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    @endif
+    <title>@yield('title', 'Happylife Multipurpose Int\'l')</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -53,14 +38,10 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ route('home') }}">
-                @if($logo)
-                    <img src="{{ asset('storage/'.$logo) }}" alt="{{ $siteName }}" style="max-height: 40px;">
-                @else
-                    <div class="bg-red-happylife rounded-circle d-flex justify-content-center align-items-center me-2" style="width:40px; height:40px;">
-                        <span class="text-white fw-bold fs-5">H</span>
-                    </div>
-                    <span class="fs-4 fw-bold text-dark">{{ $siteName }}<span class="text-red-happylife">.</span></span>
-                @endif
+                <div class="bg-red-happylife rounded-circle d-flex justify-content-center align-items-center me-2" style="width:40px; height:40px;">
+                    <span class="text-white fw-bold fs-5">H</span>
+                </div>
+                <span class="fs-4 fw-bold text-dark">Happylife<span class="text-red-happylife">.</span></span>
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -102,14 +83,10 @@
             <div class="row">
                 <div class="col-md-3 mb-4">
                     <a href="{{ route('home') }}" class="d-flex align-items-center mb-3 text-decoration-none">
-                        @if($logo)
-                            <img src="{{ asset('storage/'.$logo) }}" alt="{{ $siteName }}" style="max-height: 40px; margin-right: 10px;">
-                        @else
-                            <div class="bg-red-happylife rounded-circle d-flex justify-content-center align-items-center me-2" style="width:40px; height:40px;">
-                                <span class="text-white fw-bold fs-5">H</span>
-                            </div>
-                            <span class="fs-5 fw-bold text-white">{{ $siteName }}<span class="text-red-happylife">.</span></span>
-                        @endif
+                        <div class="bg-red-happylife rounded-circle d-flex justify-content-center align-items-center me-2" style="width:40px; height:40px;">
+                            <span class="text-white fw-bold fs-5">H</span>
+                        </div>
+                        <span class="fs-5 fw-bold text-white">Happylife<span class="text-red-happylife">.</span></span>
                     </a>
                     <p class="text-secondary small">Hybrid MLM + E-Commerce + Reward + VTU Services Platform</p>
                 </div>
@@ -156,7 +133,7 @@
             </div>
 
             <div class="border-top border-secondary mt-4 pt-3 text-center text-secondary small">
-                &copy; {{ date('Y') }} {{ $siteName }}. All rights reserved.
+                &copy; {{ date('Y') }} Happylife Multipurpose Int'l. All rights reserved.
             </div>
         </div>
     </footer>
