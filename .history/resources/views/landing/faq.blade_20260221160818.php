@@ -114,15 +114,8 @@
                         </div>
                     </div>
                     
-                    @php
-                        // Ensure $faqs is an array
-                        if (isset($faqs) && is_string($faqs)) {
-                            $faqs = json_decode($faqs, true) ?? [];
-                        }
-                    @endphp
-                    
                     <div class="accordion" id="generalAccordion">
-                        @forelse($faqs as $index => $faq)
+                        @foreach($faqs as $index => $faq)
                         <div class="accordion-item border-0 mb-3 rounded-4 shadow-sm">
                             <h2 class="accordion-header" id="generalHeading{{ $index }}">
                                 <button class="accordion-button collapsed rounded-4 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#generalCollapse{{ $index }}" aria-expanded="false" aria-controls="generalCollapse{{ $index }}">
@@ -137,11 +130,7 @@
                                 </div>
                             </div>
                         </div>
-                        @empty
-                        <div class="alert alert-info">
-                            No FAQs available at the moment.
-                        </div>
-                        @endforelse
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -393,7 +382,8 @@
             </p>
         </div>
         
-        <div class="row g-4 justify-content-center">
+       
+            
             <div class="col-md-4">
                 <a href="{{ route('about') }}" class="resource-card card border-0 shadow-sm text-decoration-none h-100">
                     <div class="card-body p-5 text-center">

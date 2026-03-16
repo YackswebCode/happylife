@@ -14,7 +14,6 @@ use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\Member\SupportController;
 use App\Http\Controllers\Member\AnnouncementController;
 use App\Http\Controllers\Member\VTUController;
-use App\Http\Controllers\ContactController;
 
 /*
 |--------------------------------------------------------------------------

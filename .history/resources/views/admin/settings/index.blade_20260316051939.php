@@ -38,9 +38,6 @@
                     <a class="nav-link" data-bs-toggle="tab" href="#steps">How It Works</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="tab" href="#about">About Page</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="tab" href="#faqs">FAQs</a>
                 </li>
                 <li class="nav-item">
@@ -139,11 +136,11 @@
                                     <input type="hidden" name="features[{{ $i }}][icon]" value="{{ $features[$i]['icon'] ?? '' }}">
                                     <div class="mb-2">
                                         <label class="form-label">Title</label>
-                                        <input type="text" class="form-control" name="features[{{ $i }}][title]" value="{{ old("features.$i.title", $features[$i]['title'] ?? '') }}">
+                                        <input type="text" class="form-control" name="features[{{ $i }}][title]" value="{{ old("features.$i.title", $features[$i]['title'] ?? '') }}" required>
                                     </div>
                                     <div class="mb-2">
                                         <label class="form-label">Description</label>
-                                        <textarea class="form-control" name="features[{{ $i }}][description]" rows="2">{{ old("features.$i.description", $features[$i]['description'] ?? '') }}</textarea>
+                                        <textarea class="form-control" name="features[{{ $i }}][description]" rows="2" required>{{ old("features.$i.description", $features[$i]['description'] ?? '') }}</textarea>
                                     </div>
                                 </div>
                             </div>
@@ -163,95 +160,15 @@
                                     <input type="hidden" name="steps[{{ $i }}][icon]" value="{{ $steps[$i]['icon'] ?? '' }}">
                                     <div class="mb-2">
                                         <label class="form-label">Title</label>
-                                        <input type="text" class="form-control" name="steps[{{ $i }}][title]" value="{{ old("steps.$i.title", $steps[$i]['title'] ?? '') }}">
+                                        <input type="text" class="form-control" name="steps[{{ $i }}][title]" value="{{ old("steps.$i.title", $steps[$i]['title'] ?? '') }}" required>
                                     </div>
                                     <div class="mb-2">
                                         <label class="form-label">Description</label>
-                                        <textarea class="form-control" name="steps[{{ $i }}][description]" rows="2">{{ old("steps.$i.description", $steps[$i]['description'] ?? '') }}</textarea>
+                                        <textarea class="form-control" name="steps[{{ $i }}][description]" rows="2" required>{{ old("steps.$i.description", $steps[$i]['description'] ?? '') }}</textarea>
                                     </div>
                                 </div>
                             </div>
                         @endfor
-                    </div>
-
-                    {{-- About Page Tab --}}
-                    <div class="tab-pane fade" id="about">
-                        <div class="row">
-                            <div class="col-lg-8">
-                                <h5 class="mb-3">Hero Section</h5>
-                                <div class="mb-3">
-                                    <label for="about_hero_title" class="form-label">Hero Title (HTML allowed)</label>
-                                    <textarea class="form-control" id="about_hero_title" name="about_hero_title" rows="2">{{ old('about_hero_title', $settings['about_hero_title'] ?? '') }}</textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="about_hero_subtitle" class="form-label">Hero Subtitle</label>
-                                    <textarea class="form-control" id="about_hero_subtitle" name="about_hero_subtitle" rows="2">{{ old('about_hero_subtitle', $settings['about_hero_subtitle'] ?? '') }}</textarea>
-                                </div>
-
-                                <hr class="my-4">
-
-                                <h5 class="mb-3">Mission Section</h5>
-                                <div class="mb-3">
-                                    <label for="about_mission_badge" class="form-label">Mission Badge</label>
-                                    <input type="text" class="form-control" id="about_mission_badge" name="about_mission_badge" value="{{ old('about_mission_badge', $settings['about_mission_badge'] ?? '') }}">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="about_mission_title" class="form-label">Mission Title (HTML allowed)</label>
-                                    <textarea class="form-control" id="about_mission_title" name="about_mission_title" rows="2">{{ old('about_mission_title', $settings['about_mission_title'] ?? '') }}</textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="about_mission_text" class="form-label">Mission Text (short)</label>
-                                    <textarea class="form-control" id="about_mission_text" name="about_mission_text" rows="2">{{ old('about_mission_text', $settings['about_mission_text'] ?? '') }}</textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="about_mission_description" class="form-label">Mission Description (long)</label>
-                                    <textarea class="form-control" id="about_mission_description" name="about_mission_description" rows="3">{{ old('about_mission_description', $settings['about_mission_description'] ?? '') }}</textarea>
-                                </div>
-
-                                <hr class="my-4">
-
-                                <h5 class="mb-3">Approach Section</h5>
-                                <div class="mb-3">
-                                    <label for="about_approach_subtitle" class="form-label">Approach Subtitle</label>
-                                    <textarea class="form-control" id="about_approach_subtitle" name="about_approach_subtitle" rows="2">{{ old('about_approach_subtitle', $settings['about_approach_subtitle'] ?? '') }}</textarea>
-                                </div>
-
-                                <p class="text-muted">Edit the three approach steps (color options: danger, primary, success, warning, info, secondary).</p>
-                                @php
-                                    $approachSteps = $settings['about_approach_steps'] ?? [];
-                                @endphp
-                                @for($i = 0; $i < 3; $i++)
-                                    <div class="card mb-3">
-                                        <div class="card-body">
-                                            <h5>Step {{ $i+1 }}</h5>
-                                            <div class="mb-2">
-                                                <label class="form-label">Title</label>
-                                                <input type="text" class="form-control" name="about_approach_steps[{{ $i }}][title]" value="{{ old("about_approach_steps.$i.title", $approachSteps[$i]['title'] ?? '') }}">
-                                            </div>
-                                            <div class="mb-2">
-                                                <label class="form-label">Description</label>
-                                                <textarea class="form-control" name="about_approach_steps[{{ $i }}][desc]" rows="2">{{ old("about_approach_steps.$i.desc", $approachSteps[$i]['desc'] ?? '') }}</textarea>
-                                            </div>
-                                            <div class="mb-2">
-                                                <label class="form-label">Badge Text</label>
-                                                <input type="text" class="form-control" name="about_approach_steps[{{ $i }}][badge]" value="{{ old("about_approach_steps.$i.badge", $approachSteps[$i]['badge'] ?? '') }}">
-                                            </div>
-                                            <div class="mb-2">
-                                                <label class="form-label">Color</label>
-                                                <select class="form-select" name="about_approach_steps[{{ $i }}][color]">
-                                                    <option value="danger" {{ (old("about_approach_steps.$i.color", $approachSteps[$i]['color'] ?? '') == 'danger') ? 'selected' : '' }}>Danger</option>
-                                                    <option value="primary" {{ (old("about_approach_steps.$i.color", $approachSteps[$i]['color'] ?? '') == 'primary') ? 'selected' : '' }}>Primary</option>
-                                                    <option value="success" {{ (old("about_approach_steps.$i.color", $approachSteps[$i]['color'] ?? '') == 'success') ? 'selected' : '' }}>Success</option>
-                                                    <option value="warning" {{ (old("about_approach_steps.$i.color", $approachSteps[$i]['color'] ?? '') == 'warning') ? 'selected' : '' }}>Warning</option>
-                                                    <option value="info" {{ (old("about_approach_steps.$i.color", $approachSteps[$i]['color'] ?? '') == 'info') ? 'selected' : '' }}>Info</option>
-                                                    <option value="secondary" {{ (old("about_approach_steps.$i.color", $approachSteps[$i]['color'] ?? '') == 'secondary') ? 'selected' : '' }}>Secondary</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endfor
-                            </div>
-                        </div>
                     </div>
 
                     {{-- FAQs Tab --}}
@@ -266,11 +183,11 @@
                                     <h5>FAQ {{ $i+1 }}</h5>
                                     <div class="mb-2">
                                         <label class="form-label">Question</label>
-                                        <input type="text" class="form-control" name="faqs[{{ $i }}][question]" value="{{ old("faqs.$i.question", $faqs[$i]['question'] ?? '') }}">
+                                        <input type="text" class="form-control" name="faqs[{{ $i }}][question]" value="{{ old("faqs.$i.question", $faqs[$i]['question'] ?? '') }}" required>
                                     </div>
                                     <div class="mb-2">
                                         <label class="form-label">Answer</label>
-                                        <textarea class="form-control" name="faqs[{{ $i }}][answer]" rows="3">{{ old("faqs.$i.answer", $faqs[$i]['answer'] ?? '') }}</textarea>
+                                        <textarea class="form-control" name="faqs[{{ $i }}][answer]" rows="3" required>{{ old("faqs.$i.answer", $faqs[$i]['answer'] ?? '') }}</textarea>
                                     </div>
                                 </div>
                             </div>

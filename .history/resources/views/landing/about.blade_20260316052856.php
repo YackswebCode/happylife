@@ -44,6 +44,7 @@
                         {{ $settings['about_mission_description'] ?? 'Happylife Multipurpose Int\'l was founded with the mission to empower individuals by combining the best of MLM networking, e-commerce shopping, reward systems, and utility services in one comprehensive platform.' }}
                     </p>
                     
+                    <!-- Key Features (can be made dynamic via JSON if needed, but for now keep static or use a simple array) -->
                     @php
                         $missionFeatures = $settings['about_mission_features'] ?? [
                             ['icon' => 'bi-cash-stack', 'title' => 'Multiple Income Streams', 'desc' => 'Earn from referrals, shopping, ranks, and VTU services'],
@@ -73,7 +74,7 @@
             </div>
             
             <div class="col-lg-6">
-                <!-- About Illustration (unchanged) -->
+                <!-- About Illustration (same as before) -->
                 <div class="position-relative">
                     <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
                         <div class="card-body p-0">
@@ -84,17 +85,22 @@
                                         <svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-100">
                                             <!-- Building Structure -->
                                             <rect x="100" y="100" width="200" height="150" rx="10" fill="url(#buildingGradient)" stroke="#1FA3C4" stroke-width="2"/>
+                                            <!-- Windows -->
                                             <rect x="120" y="120" width="40" height="40" rx="5" fill="#3DB7D6"/>
                                             <rect x="170" y="120" width="40" height="40" rx="5" fill="#3DB7D6"/>
                                             <rect x="220" y="120" width="40" height="40" rx="5" fill="#3DB7D6"/>
                                             <rect x="120" y="170" width="40" height="40" rx="5" fill="#3DB7D6"/>
                                             <rect x="170" y="170" width="40" height="40" rx="5" fill="#3DB7D6"/>
                                             <rect x="220" y="170" width="40" height="40" rx="5" fill="#3DB7D6"/>
+                                            <!-- Door -->
                                             <rect x="165" y="210" width="50" height="40" rx="5" fill="#E63323"/>
+                                            <!-- People -->
                                             <circle cx="190" cy="230" r="8" fill="#fff"/>
                                             <circle cx="210" cy="230" r="8" fill="#fff"/>
+                                            <!-- Growth Arrows -->
                                             <path d="M50 150L100 150L100 100" stroke="#E63323" stroke-width="2" stroke-linecap="round"/>
                                             <path d="M350 150L300 150L300 100" stroke="#E63323" stroke-width="2" stroke-linecap="round"/>
+                                            <!-- Floating Elements -->
                                             <circle cx="60" cy="120" r="5" fill="#3DB7D6" fill-opacity="0.7">
                                                 <animate attributeName="cy" values="120;110;120" dur="3s" repeatCount="indefinite"/>
                                             </circle>
@@ -110,6 +116,7 @@
                                         </svg>
                                     </div>
                                 </div>
+                                <!-- Decorative Elements -->
                                 <div class="position-absolute top-0 start-0 m-4">
                                     <div class="bg-danger text-white rounded-circle p-2">
                                         <i class="bi bi-building fs-4"></i>
@@ -180,33 +187,26 @@
         </div>
         
         @php
-            // Decode JSON if needed, with fallback
-            $approachSteps = $settings['about_approach_steps'] ?? '';
-            if (is_string($approachSteps)) {
-                $approachSteps = json_decode($approachSteps, true) ?? [];
-            }
-            if (empty($approachSteps)) {
-                $approachSteps = [
-                    [
-                        'title' => 'Strategic Registration',
-                        'desc' => 'Sign up with a sponsor ID and select from our four optimized membership packages, each designed for different growth trajectories.',
-                        'badge' => 'Smart Placement',
-                        'color' => 'danger'
-                    ],
-                    [
-                        'title' => 'Network Expansion',
-                        'desc' => 'Build your network using our efficient binary structure and earn multiple commissions from every level of your downline organization.',
-                        'badge' => 'Exponential Growth',
-                        'color' => 'primary'
-                    ],
-                    [
-                        'title' => 'Wealth Generation',
-                        'desc' => 'Withdraw earnings, shop premium products, and use VTU services - all from your multiple specialized wallets with instant processing.',
-                        'badge' => 'Multiple Streams',
-                        'color' => 'success'
-                    ],
-                ];
-            }
+            $approachSteps = $settings['about_approach_steps'] ?? [
+                [
+                    'title' => 'Strategic Registration',
+                    'desc' => 'Sign up with a sponsor ID and select from our four optimized membership packages, each designed for different growth trajectories.',
+                    'badge' => 'Smart Placement',
+                    'color' => 'danger'
+                ],
+                [
+                    'title' => 'Network Expansion',
+                    'desc' => 'Build your network using our efficient binary structure and earn multiple commissions from every level of your downline organization.',
+                    'badge' => 'Exponential Growth',
+                    'color' => 'primary'
+                ],
+                [
+                    'title' => 'Wealth Generation',
+                    'desc' => 'Withdraw earnings, shop premium products, and use VTU services - all from your multiple specialized wallets with instant processing.',
+                    'badge' => 'Multiple Streams',
+                    'color' => 'success'
+                ],
+            ];
         @endphp
         
         <div class="row g-5">
@@ -248,7 +248,7 @@
     </div>
 </section>
 
-<!-- Core Values (static) -->
+<!-- Core Values (static, but could be made dynamic if needed) -->
 <section class="py-6 bg-white">
     <div class="container">
         <div class="text-center mb-6">
@@ -258,16 +258,16 @@
             </p>
         </div>
         
-        @php
-            $values = [
-                ['icon' => 'bi-heart-fill', 'color' => 'danger', 'title' => 'Integrity', 'desc' => 'Transparent operations and honest communication in all our dealings.'],
-                ['icon' => 'bi-people-fill', 'color' => 'primary', 'title' => 'Community', 'desc' => 'Building a supportive network where every member can thrive.'],
-                ['icon' => 'bi-lightbulb-fill', 'color' => 'warning', 'title' => 'Innovation', 'desc' => 'Continuously improving our platform with cutting-edge technology.'],
-                ['icon' => 'bi-trophy-fill', 'color' => 'success', 'title' => 'Excellence', 'desc' => 'Striving for the highest standards in service and support.'],
-            ];
-        @endphp
-        
         <div class="row g-5">
+            @php
+                $values = [
+                    ['icon' => 'bi-heart-fill', 'color' => 'danger', 'title' => 'Integrity', 'desc' => 'Transparent operations and honest communication in all our dealings.'],
+                    ['icon' => 'bi-people-fill', 'color' => 'primary', 'title' => 'Community', 'desc' => 'Building a supportive network where every member can thrive.'],
+                    ['icon' => 'bi-lightbulb-fill', 'color' => 'warning', 'title' => 'Innovation', 'desc' => 'Continuously improving our platform with cutting-edge technology.'],
+                    ['icon' => 'bi-trophy-fill', 'color' => 'success', 'title' => 'Excellence', 'desc' => 'Striving for the highest standards in service and support.'],
+                ];
+            @endphp
+            
             @foreach($values as $value)
             <div class="col-md-6 col-lg-3">
                 <div class="value-card text-center p-4 rounded-4 border-0 shadow-sm h-100">
@@ -315,7 +315,7 @@
 </section>
 
 <style>
-    /* All styles remain unchanged */
+    /* (Keep all existing styles exactly as before) */
     .py-6 {
         padding-top: 4rem !important;
         padding-bottom: 4rem !important;

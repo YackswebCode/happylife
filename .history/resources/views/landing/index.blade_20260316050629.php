@@ -3,7 +3,7 @@
 @section('title', 'Happylife Multipurpose Int\'l - Hybrid MLM Platform')
 
 @section('content')
-<!-- Hero Section (unchanged, keep as is) -->
+<!-- Hero Section -->
 <section class="position-relative overflow-hidden" style="background: linear-gradient(135deg, #1FA3C4 0%, #3DB7D6 100%);">
     <!-- SVG Background Pattern -->
     <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10">
@@ -17,7 +17,7 @@
             <div class="col-lg-6 mb-5 mb-lg-0">
                 <div class="mb-4">
                     <span class="badge bg-white text-dark px-4 py-2 rounded-pill fw-semibold mb-3">
-                        🚀 Join The Revolution
+                        ðŸš€ Join The Revolution
                     </span>
                     <h1 class="display-4 fw-bold text-white mb-4">
                         Build Your <span class="text-warning">Financial Freedom</span> Empire
@@ -33,6 +33,7 @@
                         <span>Start Earning Today</span>
                         <i class="bi bi-arrow-right"></i>
                     </a>
+                 
                 </div>
                 
                 <!-- Stats -->
@@ -45,7 +46,7 @@
                     </div>
                     <div class="col-4">
                         <div class="text-center">
-                            <div class="h2 fw-bold text-white mb-1">₦500M+</div>
+                            <div class="h2 fw-bold text-white mb-1">â‚¦500M+</div>
                             <div class="text-white opacity-75 small">Paid in Earnings</div>
                         </div>
                     </div>
@@ -59,7 +60,7 @@
             </div>
             
             <div class="col-lg-6">
-                <!-- Hero SVG Illustration (unchanged) -->
+                <!-- Hero SVG Illustration -->
                 <div class="position-relative">
                     <div class="position-relative">
                         <svg class="w-100" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -111,7 +112,7 @@
     </div>
 </section>
 
-<!-- Features Section (unchanged) -->
+<!-- Features Section -->
 <section class="py-6 position-relative bg-white">
     <div class="container">
         <div class="text-center mb-6">
@@ -207,7 +208,7 @@
 
 @php use Illuminate\Support\Str; @endphp
 
-<!-- Products Section - REDESIGNED -->
+<!-- Products -->
 <section class="py-6 bg-light position-relative">
     <!-- Background Pattern -->
     <div class="position-absolute top-0 start-0 w-100 h-100 opacity-03">
@@ -219,42 +220,39 @@
     <div class="container position-relative">
         <div class="text-center mb-6">
             <h2 class="display-5 fw-bold mb-3">
-                Our <span class="text-danger">Products</span>
+                Our <span class="text-danger">Products!</span>
             </h2>
             <p class="lead text-muted mx-auto" style="max-width: 600px;">
-                Discover our curated collection of high‑quality products designed to add value to your life.
+                The products in our catalog are designed to meet the diverse needs 
+                of our customers, providing exceptional value and quality.
             </p>
         </div>
         
         <div class="row g-4 justify-content-center">
             @forelse($products as $product)
                 <div class="col-md-6 col-lg-3">
-                    <div class="card border-0 shadow-lg rounded-4 h-100 product-card">
-                        <div class="position-relative overflow-hidden rounded-top-4" style="height: 200px;">
-                            @if($product->image)
-                                <img src="{{ asset('storage/'.$product->image) }}" 
-                                     alt="{{ $product->name }}" 
-                                     class="img-fluid w-100 h-100 object-fit-cover"
-                                     style="transition: transform 0.3s ease;">
-                            @else
-                                <div class="d-flex align-items-center justify-content-center bg-light text-muted w-100 h-100">
-                                    <i class="bi bi-image" style="font-size: 3rem;"></i>
-                                </div>
-                            @endif
-                            <!-- Optional overlay -->
-                            <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-0 hover-overlay"></div>
-                        </div>
+                    <div class="card border-0 shadow-lg rounded-4 h-100">
                         <div class="card-body p-4 text-center">
-                            <h3 class="h5 fw-bold mb-2 text-truncate">{{ $product->name }}</h3>
-                            <p class="text-muted small mb-3" style="min-height: 3em;">
-                                {{ Str::limit($product->description, 60) }}
+
+                            <h3 class="h5 fw-bold mb-3">
+                                {{ $product->name }}
+                            </h3>
+
+                            <div class="package-icon mx-auto mb-3">
+                                <img src="{{ $product->image_url }}"
+                                     alt="{{ $product->name }}"
+                                     class="img-fluid rounded-circle"
+                                     style="width: 90px; height: 90px; object-fit: cover;">
+                            </div>
+
+                            <p class="text-muted small mb-3">
+                                {{ Str::limit($product->description, 80) }}
                             </p>
+
                             <div class="fw-bold text-danger fs-5">
                                 ₦{{ number_format($product->display_price, 2) }}
                             </div>
-                            @if($product->category)
-                                <span class="badge bg-teal-blue mt-3">{{ $product->category }}</span>
-                            @endif
+
                         </div>
                     </div>
                 </div>
@@ -267,7 +265,7 @@
     </div>
 </section>
 
-<!-- How It Works (unchanged) -->
+<!-- How It Works -->
 <section class="py-6 bg-white">
     <div class="container">
         <div class="text-center mb-6">
@@ -307,7 +305,7 @@
     </div>
 </section>
 
-<!-- CTA Section (unchanged) -->
+<!-- CTA Section -->
 <section class="py-6 position-relative overflow-hidden" style="background: linear-gradient(135deg, #E63323 0%, #d6281a 100%);">
     <!-- Background Pattern -->
     <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10">
@@ -418,32 +416,6 @@
     
     .opacity-10 {
         opacity: 0.1;
-    }
-
-    /* New product card styles */
-    .product-card {
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .product-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 30px rgba(0,0,0,0.15) !important;
-    }
-    .product-card:hover .object-fit-cover {
-        transform: scale(1.05);
-    }
-    .object-fit-cover {
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-    .hover-overlay {
-        transition: opacity 0.3s ease;
-    }
-    .product-card:hover .hover-overlay {
-        opacity: 0.1;
-    }
-    .bg-teal-blue {
-        background-color: #1FA3C4;
     }
     
     /* Responsive Adjustments */

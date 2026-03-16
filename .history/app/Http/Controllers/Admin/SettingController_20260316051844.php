@@ -61,21 +61,8 @@ class SettingController extends Controller
         $textFields = [
             'hero_badge', 'hero_title', 'hero_subtitle',
             'stat1_label', 'stat1_value', 'stat2_label', 'stat2_value', 'stat3_label', 'stat3_value',
-            'cta_title', 'cta_subtitle', 'cta_button_text', 'cta_button_link', 'cta_secondary_text', 'cta_secondary_link',
-            'about_hero_title', 'about_hero_subtitle',
-            'about_mission_badge', 'about_mission_title',
-            'about_mission_text', 'about_mission_description',
-            'about_approach_subtitle',
+            'cta_title', 'cta_subtitle', 'cta_button_text', 'cta_button_link', 'cta_secondary_text', 'cta_secondary_link'
         ];
-
-        // After saving JSON fields like features, steps, etc.
-        if ($request->has('about_approach_steps')) {
-            Setting::updateOrCreate(
-                ['key' => 'about_approach_steps'],
-                ['value' => $request->about_approach_steps, 'type' => 'json']
-            );
-        }
-        
         foreach ($textFields as $field) {
             if ($request->has($field)) {
                 Setting::updateOrCreate(
