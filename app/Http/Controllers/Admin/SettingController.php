@@ -93,51 +93,50 @@ class SettingController extends Controller
         };
 
         // ========================
-        // FEATURES
+        // FEATURES (JSON)
         // ========================
         Setting::updateOrCreate(
             ['key' => 'landing_features'],
-            ['value' => $cleanArray($request->input('features', []), ['title','description']), 'type' => 'json']
+            ['type' => 'json', 'value' => $cleanArray($request->input('features', []), ['title','description'])]
         );
 
         // ========================
-        // STEPS
+        // STEPS (JSON)
         // ========================
         Setting::updateOrCreate(
             ['key' => 'landing_steps'],
-            ['value' => $cleanArray($request->input('steps', []), ['title','description']), 'type' => 'json']
+            ['type' => 'json', 'value' => $cleanArray($request->input('steps', []), ['title','description'])]
         );
 
         // ========================
-        // FAQs
+        // FAQs (JSON)
         // ========================
         Setting::updateOrCreate(
             ['key' => 'landing_faqs'],
-            ['value' => $cleanArray($request->input('faqs', []), ['question','answer']), 'type' => 'json']
+            ['type' => 'json', 'value' => $cleanArray($request->input('faqs', []), ['question','answer'])]
         );
 
         // ========================
-        // ABOUT APPROACH
+        // ABOUT APPROACH (JSON)
         // ========================
         Setting::updateOrCreate(
             ['key' => 'about_approach_steps'],
-            ['value' => $cleanArray($request->input('about_approach_steps', []), ['title','desc']), 'type' => 'json']
+            ['type' => 'json', 'value' => $cleanArray($request->input('about_approach_steps', []), ['title','desc'])]
         );
 
         // ========================
-        // CTA FEATURES
+        // CTA FEATURES (JSON)
         // ========================
         Setting::updateOrCreate(
             ['key' => 'cta_features'],
-            ['value' => $cleanArray($request->input('cta_features', [])), 'type' => 'json']
+            ['type' => 'json', 'value' => $cleanArray($request->input('cta_features', []))]
         );
 
         // ========================
-        // TEAM MEMBERS ðŸ”¥
+        // TEAM MEMBERS (JSON)
         // ========================
         $team = collect($request->input('team', []))
             ->map(function ($member, $index) use ($request) {
-
                 // Upload image
                 if ($request->hasFile("team.$index.image")) {
                     $path = $request->file("team.$index.image")->store('settings/team', 'public');
@@ -156,7 +155,7 @@ class SettingController extends Controller
 
         Setting::updateOrCreate(
             ['key' => 'team_members'],
-            ['value' => $team, 'type' => 'json']
+            ['type' => 'json', 'value' => $team]   // type BEFORE value
         );
 
         return redirect()->route('admin.settings.index')

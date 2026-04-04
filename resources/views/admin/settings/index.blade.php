@@ -46,6 +46,9 @@
                 <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="tab" href="#cta">CTA Section</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#team">Team</a>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -322,6 +325,48 @@
                         </div>
                     </div>
                 </div>
+                <div class="tab-pane fade" id="team">
+    <p class="text-muted">Manage team members.</p>
+
+    @php
+        $team = $settings['team_members'] ?? [];
+    @endphp
+
+    @for($i = 0; $i < 4; $i++)
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Member {{ $i+1 }}</h5>
+
+                <div class="mb-2">
+                    <label>Name</label>
+                    <input type="text" class="form-control"
+                        name="team[{{ $i }}][name]"
+                        value="{{ old("team.$i.name", $team[$i]['name'] ?? '') }}">
+                </div>
+
+                <div class="mb-2">
+                    <label>Role</label>
+                    <input type="text" class="form-control"
+                        name="team[{{ $i }}][role]"
+                        value="{{ old("team.$i.role", $team[$i]['role'] ?? '') }}">
+                </div>
+
+                <div class="mb-2">
+                    <label>Image</label>
+
+                    @if(!empty($team[$i]['image']))
+                        <div class="mb-2">
+                            <img src="{{ asset('storage/'.$team[$i]['image']) }}" style="height:60px;">
+                        </div>
+                    @endif
+
+                    <input type="file" class="form-control"
+                        name="team[{{ $i }}][image]">
+                </div>
+            </div>
+        </div>
+    @endfor
+</div>
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-red px-4 py-2">
