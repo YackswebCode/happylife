@@ -53,7 +53,7 @@ class PaymentController extends Controller
         DB::beginTransaction();
 
         try {
-            // Record the payment
+            // Record payment
             Payment::create([
                 'user_id' => $user->id,
                 'package_id' => $package->id,
@@ -70,23 +70,16 @@ class PaymentController extends Controller
             $user->activated_at = now();
             $user->save();
 
-            // Update placement counts for the immediate parent (still useful for some views)
             $this->updatePlacementUserCounts($user);
-
-            // NEW: Update left_count / right_count for ALL ancestors along the binary path
             $this->updateBinaryTreeCounts($user);
-
-            // Distribute PV up the binary and unilevel trees
             $this->updateAllPvCounts($user, $package);
 
-            // Award bonuses
             $this->processDirectBonus($user, $package);
             $this->processIndirectBonuses($user, $package);
             $this->processPairBonuses($user);
 
             DB::commit();
 
-            // Log out the user (or redirect to login)
             Auth::logout();
 
             return response()->json([
@@ -100,9 +93,6 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Increment the direct left/right count of the placement parent.
-     */
     private function updatePlacementUserCounts($user)
     {
         if (!$user->placement_id) return;
@@ -119,9 +109,6 @@ class PaymentController extends Controller
         $parent->save();
     }
 
-    /**
-     * NEW: Increment left_count or right_count for all ancestors in the binary tree.
-     */
     private function updateBinaryTreeCounts($user)
     {
         $current = $user;
@@ -130,7 +117,6 @@ class PaymentController extends Controller
             $parent = User::find($current->placement_id);
             if (!$parent) break;
 
-            // Determine which leg of the parent this user belongs to
             $leg = $this->getLegForAncestor($parent, $user);
 
             if ($leg === 'left') {
@@ -138,49 +124,38 @@ class PaymentController extends Controller
             } else {
                 $parent->right_count++;
             }
-            $parent->save();
 
+            $parent->save();
             $current = $parent;
         }
     }
 
-    /**
-     * Helper: determine which leg (left/right) of an ancestor a descendant belongs to.
-     */
     private function getLegForAncestor($ancestor, $descendant)
     {
-        if ($ancestor->id === $descendant->id) {
-            return $descendant->placement_position; // should not happen here
-        }
-
         $path = [];
         $current = $descendant;
+
         while ($current->placement_id && $current->id !== $ancestor->id) {
             $parent = User::find($current->placement_id);
             if (!$parent) break;
+
             $path[] = $current->placement_position;
             $current = $parent;
         }
-        // The last direction in the path is the leg under ancestor
+
         return array_pop($path);
     }
 
-    /**
-     * Start PV distribution: binary tree (left/right PV) and unilevel tree (total/current PV).
-     */
     private function updateAllPvCounts($user, $package)
     {
         $pv = (float) $package->pv;
 
-        // Binary tree: add PV to ancestors' left_pv / right_pv based on placement path
         $this->updateBinaryTreePv($user, $pv);
-
-        // Unilevel tree: add PV to sponsors' total_pv / current_pv
         $this->updateUnilevelTreePv($user, $pv);
     }
 
     /**
-     * Add PV to the binary ancestors (left_pv / right_pv).
+     * ✅ Binary PV (Permanent + Available)
      */
     private function updateBinaryTreePv($user, $pv)
     {
@@ -191,9 +166,11 @@ class PaymentController extends Controller
             if (!$parent) break;
 
             if ($current->placement_position === 'left') {
-                $parent->left_pv += $pv;
+                $parent->left_pv += $pv;              // permanent
+                $parent->left_available_pv += $pv;    // pairing use
             } else {
                 $parent->right_pv += $pv;
+                $parent->right_available_pv += $pv;
             }
 
             $parent->save();
@@ -202,7 +179,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Add PV to the unilevel ancestors (total_pv / current_pv).
+     * ✅ Unilevel PV (no reduction)
      */
     private function updateUnilevelTreePv($user, $pv)
     {
@@ -220,9 +197,6 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Award direct bonus to the immediate sponsor (level 1).
-     */
     private function processDirectBonus($user, $package)
     {
         if (!$user->sponsor_id) return;
@@ -231,6 +205,7 @@ class PaymentController extends Controller
         if (!$sponsor) return;
 
         $bonus = $package->direct_bonus_amount;
+
         if ($bonus <= 0) return;
 
         $sponsor->commission_wallet_balance += $bonus;
@@ -248,9 +223,6 @@ class PaymentController extends Controller
         ]);
     }
 
-    /**
-     * Award indirect bonuses to level 2 and level 3 sponsors using the package's indirect_bonus_amount.
-     */
     private function processIndirectBonuses($user, $package)
     {
         $level = 1;
@@ -260,38 +232,24 @@ class PaymentController extends Controller
             $sponsor = User::find($currentSponsorId);
             if (!$sponsor) break;
 
-            // Level 2 and 3 get the package's indirect_bonus_amount
-            if ($level == 2) {
+            if ($level == 2 || $level == 3) {
                 $bonus = $package->indirect_bonus_amount;
 
                 $sponsor->commission_wallet_balance += $bonus;
-                if (isset($sponsor->indirect_level_2_bonus_total)) {
+
+                if ($level == 2 && isset($sponsor->indirect_level_2_bonus_total)) {
                     $sponsor->indirect_level_2_bonus_total += $bonus;
                 }
-                $sponsor->save();
 
-                Commission::create([
-                    'user_id' => $sponsor->id,
-                    'type' => 'indirect_level_2',
-                    'amount' => $bonus,
-                    'from_user_id' => $user->id,
-                    'from_package_id' => $package->id,
-                    'status' => 'paid',
-                ]);
-            }
-
-            if ($level == 3) {
-                $bonus = $package->indirect_bonus_amount;
-
-                $sponsor->commission_wallet_balance += $bonus;
-                if (isset($sponsor->indirect_level_3_bonus_total)) {
+                if ($level == 3 && isset($sponsor->indirect_level_3_bonus_total)) {
                     $sponsor->indirect_level_3_bonus_total += $bonus;
                 }
+
                 $sponsor->save();
 
                 Commission::create([
                     'user_id' => $sponsor->id,
-                    'type' => 'indirect_level_3',
+                    'type' => 'indirect_level_' . $level,
                     'amount' => $bonus,
                     'from_user_id' => $user->id,
                     'from_package_id' => $package->id,
@@ -305,7 +263,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Process pairing bonuses up the binary tree.
+     * ✅ Pairing uses ONLY available PV
      */
     private function processPairBonuses($user)
     {
@@ -314,18 +272,19 @@ class PaymentController extends Controller
         $current = User::find($user->placement_id);
 
         while ($current) {
-            // Calculate how many pairs can be formed (each pair uses 40 PV from each leg)
+
             $pairs = min(
-                floor($current->left_pv / 40),
-                floor($current->right_pv / 40)
+                floor($current->left_available_pv / 40),
+                floor($current->right_available_pv / 40)
             );
 
             if ($pairs > 0) {
-                $bonus = $pairs * 1500; // 1500 per pair (adjust as needed)
+                $bonus = $pairs * 1500;
                 $usedPv = $pairs * 40;
 
-                $current->left_pv -= $usedPv;
-                $current->right_pv -= $usedPv;
+                // ✅ Reduce ONLY available PV
+                $current->left_available_pv -= $usedPv;
+                $current->right_available_pv -= $usedPv;
 
                 $current->commission_wallet_balance += $bonus;
                 $current->save();

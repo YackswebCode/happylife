@@ -17,7 +17,7 @@
             <div class="col-lg-6 mb-5 mb-lg-0">
                 <div class="mb-4">
                     <span class="badge bg-white text-dark px-4 py-2 rounded-pill fw-semibold mb-3">
-                        🚀 Join The Revolution
+                        ðŸš€ Join The Revolution
                     </span>
                     <h1 class="display-4 fw-bold text-white mb-4">
                         Build Your <span class="text-warning">Financial Freedom</span> Empire
@@ -45,7 +45,7 @@
                     </div>
                     <div class="col-4">
                         <div class="text-center">
-                            <div class="h2 fw-bold text-white mb-1">₦500M+</div>
+                            <div class="h2 fw-bold text-white mb-1">â‚¦500M+</div>
                             <div class="text-white opacity-75 small">Paid in Earnings</div>
                         </div>
                     </div>
@@ -212,7 +212,7 @@
     <!-- Background Pattern -->
     <div class="position-absolute top-0 start-0 w-100 h-100 opacity-03">
         <svg class="w-100 h-100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-            <path fill="#E63323" d="M0,160L48,176C96,192,192,224,288,208C384,192,480,128,576,112C672,96,768,128,864,144C960,160,1056,160,1152,144C1248,128,1344,96,1392,80L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            <path fill="#E63323" d="M0,160L48,176C96,192,192,224,288,208C384,192,480,128,576,112C672,96,768,128,864,144C960,160,1056,160,1152,144C1248,128,1344,96,1392,80L1440,64L1440,320L1392,320C1344,320C1248,320C1152,320C1056,320C960,320C864,320C768,320C672,320C576,320C480,320C384,320C288,320C192,320C96,320C48,320L0,320Z"></path>
         </svg>
     </div>
     
@@ -222,7 +222,7 @@
                 Our <span class="text-danger">Products</span>
             </h2>
             <p class="lead text-muted mx-auto" style="max-width: 600px;">
-                Discover our curated collection of high‑quality products designed to add value to your life.
+                Discover our curated collection of high-quality products designed to add value to your life.
             </p>
         </div>
         
@@ -250,7 +250,7 @@
                                 {{ Str::limit($product->description, 60) }}
                             </p>
                             <div class="fw-bold text-danger fs-5">
-                                ₦{{ number_format($product->display_price, 2) }}
+                                â‚¦{{ number_format($product->display_price, 2) }}
                             </div>
                             @if($product->category)
                                 <span class="badge bg-teal-blue mt-3">{{ $product->category }}</span>
@@ -302,6 +302,67 @@
                     <p class="text-muted">{{ $step['desc'] }}</p>
                 </div>
             </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="py-6 bg-light position-relative">
+    <div class="container position-relative">
+        <div class="text-center mb-6">
+            <h2 class="display-5 fw-bold mb-3">Meet Our <span class="text-danger">Team</span></h2>
+            <p class="lead text-muted mx-auto" style="max-width: 700px;">
+                The people behind the vision, growth, and daily success of Happylife Multipurpose Int'l.
+            </p>
+        </div>
+
+        @php
+            $teamMembers = [
+                [
+                    'name' => 'Happiness Ibrahim',
+                    'role' => 'Founder & CEO',
+                    'image' => asset('images/team/team-1.jpg'),
+                    'bio' => 'Leads the overall vision, strategy, and expansion of the platform.',
+                ],
+                [
+                    'name' => 'Musa Abdulrahman',
+                    'role' => 'Operations Manager',
+                    'image' => asset('images/team/team-2.jpg'),
+                    'bio' => 'Oversees daily operations, support, and system coordination.',
+                ],
+                [
+                    'name' => 'Aisha Suleiman',
+                    'role' => 'Marketing Lead',
+                    'image' => asset('images/team/team-3.jpg'),
+                    'bio' => 'Drives brand growth, promotions, and community engagement.',
+                ],
+                [
+                    'name' => 'Yusuf Bello',
+                    'role' => 'Technical Lead',
+                    'image' => asset('images/team/team-4.jpg'),
+                    'bio' => 'Maintains the platform, features, security, and performance.',
+                ],
+            ];
+        @endphp
+
+        <div class="row g-4 justify-content-center">
+            @foreach($teamMembers as $member)
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border-0 shadow-lg rounded-4 h-100 team-card overflow-hidden">
+                        <div class="position-relative" style="height: 280px;">
+                            <img src="{{ $member['image'] }}"
+                                 alt="{{ $member['name'] }}"
+                                 class="w-100 h-100 object-fit-cover">
+                            <div class="position-absolute top-0 start-0 w-100 h-100 team-overlay"></div>
+                        </div>
+                        <div class="card-body p-4 text-center">
+                            <h4 class="fw-bold mb-1">{{ $member['name'] }}</h4>
+                            <p class="text-danger fw-semibold mb-3">{{ $member['role'] }}</p>
+                            <p class="text-muted small mb-0">{{ $member['bio'] }}</p>
+                        </div>
+                    </div>
+                </div>
             @endforeach
         </div>
     </div>
@@ -444,6 +505,18 @@
     }
     .bg-teal-blue {
         background-color: #1FA3C4;
+    }
+
+    /* Team section styles */
+    .team-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .team-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 30px rgba(0,0,0,0.12) !important;
+    }
+    .team-overlay {
+        background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.30) 100%);
     }
     
     /* Responsive Adjustments */
