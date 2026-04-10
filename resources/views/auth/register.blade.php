@@ -391,14 +391,6 @@
                     </form>
                 </div>
             </div>
-
-            <!-- Security Note -->
-            <div class="alert alert-light border mt-4 text-center">
-                <div class="d-flex align-items-center justify-content-center">
-                    <i class="bi bi-shield-check text-success me-2"></i>
-                    <small class="text-muted">Your information is protected with bank-level security & encryption</small>
-                </div>
-            </div>
         </div>
     </div>
 </div>

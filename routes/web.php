@@ -164,7 +164,9 @@ Route::prefix('member')->name('member.')->middleware(['auth', 'verified'])->grou
     // KYC
     Route::get('/kyc', [App\Http\Controllers\Member\KycController::class, 'index'])->name('kyc.index');
     Route::post('/kyc/store', [App\Http\Controllers\Member\KycController::class, 'store'])->name('kyc.store');
-});
+    
+
+    });
 
 /*
 |--------------------------------------------------------------------------

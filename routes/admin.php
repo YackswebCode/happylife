@@ -1,19 +1,78 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+// Admin Auth & Dashboard
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController;
 
+// User Management
+use App\Http\Controllers\Admin\UserController;
+
+// Orders
+use App\Http\Controllers\Admin\OrderController;
+
+// Products & Categories
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\LandingProductController;
+use App\Http\Controllers\Admin\ProductClaimController;
+use App\Http\Controllers\Admin\ProductCategoryController;
+use App\Http\Controllers\Admin\RepurchaseProductController;
+
+// Packages & Ranks
+use App\Http\Controllers\Admin\PackageController;
+use App\Http\Controllers\Admin\RankController;
+
+// KYC, Withdrawals & Funding
+use App\Http\Controllers\Admin\KycController;
+use App\Http\Controllers\Admin\WithdrawalController;
+use App\Http\Controllers\Admin\FundingRequestController;
+
+// Commissions & Announcements
+use App\Http\Controllers\Admin\CommissionController;
+use App\Http\Controllers\Admin\AnnouncementController;
+
+// Locations
+use App\Http\Controllers\Admin\StateController;
+use App\Http\Controllers\Admin\PickupCenterController;
+
+// Payments
+use App\Http\Controllers\Admin\PaymentController;
+
+// Support
+use App\Http\Controllers\Admin\SupportController;
+
+// Upgrades
+use App\Http\Controllers\Admin\UpgradeController;
+
+// Wallets & Transactions
+use App\Http\Controllers\Admin\WalletController;
+use App\Http\Controllers\Admin\WalletTransactionController;
+
+// VTU Management
+use App\Http\Controllers\Admin\Vtu\ProviderController;
+use App\Http\Controllers\Admin\Vtu\PlanController;
+use App\Http\Controllers\Admin\Vtu\ApiSettingController;
+use App\Http\Controllers\Admin\Vtu\TransactionController;
+
+// Admins & Profile
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\ProfileController;
+
+// Settings
+use App\Http\Controllers\Admin\SettingController;
+
 Route::prefix('admin')->name('admin.')->group(function () {
 
-    // Guest routes (not logged in as admin)
+    // ==================== Guest Routes ====================
     Route::middleware('guest:admin')->group(function () {
         Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
         Route::post('/login', [LoginController::class, 'login']);
     });
 
-    // Authenticated admin routes
+    // ==================== Authenticated Admin Routes ====================
     Route::middleware('auth:admin')->group(function () {
+
         // Logout
         Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
@@ -21,66 +80,71 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         // ==================== User Management ====================
-        Route::resource('users', App\Http\Controllers\Admin\UserController::class);
-        Route::post('users/{user}/status/{status}', [App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.status');
+        Route::resource('users', UserController::class);
+        Route::post('users/{user}/status/{status}', [UserController::class, 'toggleStatus'])->name('users.status');
 
         // ==================== Orders ====================
-        Route::get('orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
-        Route::get('orders/{order}', [App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.show');
+        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
         // ==================== Products & Categories ====================
-        Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
-        Route::resource('landing-products', App\Http\Controllers\Admin\LandingProductController::class);
-        Route::resource('product-claims', App\Http\Controllers\Admin\ProductClaimController::class)->except(['create', 'store', 'destroy']);
-        Route::resource('product-categories', App\Http\Controllers\Admin\ProductCategoryController::class);
-        Route::resource('repurchase-products', App\Http\Controllers\Admin\RepurchaseProductController::class);
+        Route::resource('products', ProductController::class);
+        Route::resource('landing-products', LandingProductController::class);
+        Route::resource('product-claims', ProductClaimController::class)->except(['create', 'store', 'destroy']);
+        Route::resource('product-categories', ProductCategoryController::class);
+        Route::resource('repurchase-products', RepurchaseProductController::class);
 
         // ==================== Packages & Ranks ====================
-        Route::resource('packages', App\Http\Controllers\Admin\PackageController::class);
-        Route::resource('ranks', App\Http\Controllers\Admin\RankController::class);
+        Route::resource('packages', PackageController::class);
+        Route::resource('ranks', RankController::class);
 
-        // ==================== KYC & Withdrawals & Funding ====================
-        Route::resource('kyc', App\Http\Controllers\Admin\KycController::class)->only(['index', 'show', 'update']);
-        Route::resource('withdrawals', App\Http\Controllers\Admin\WithdrawalController::class)->only(['index', 'show', 'update']);
-        Route::resource('funding-requests', App\Http\Controllers\Admin\FundingRequestController::class)->only(['index', 'show', 'update']);
+        // ==================== KYC, Withdrawals & Funding ====================
+        Route::resource('kyc', KycController::class)->only(['index', 'show', 'update']);
+        Route::resource('withdrawals', WithdrawalController::class)->only(['index', 'show', 'update']);
+        Route::resource('funding-requests', FundingRequestController::class)->only(['index', 'show', 'update']);
 
         // ==================== Commissions ====================
-        Route::resource('commissions', App\Http\Controllers\Admin\CommissionController::class)->only(['index', 'show']);
+        Route::resource('commissions', CommissionController::class)->only(['index', 'show']);
 
         // ==================== Announcements ====================
-        Route::resource('announcements', App\Http\Controllers\Admin\AnnouncementController::class);
+        Route::resource('announcements', AnnouncementController::class);
 
         // ==================== Locations ====================
-        Route::resource('states', App\Http\Controllers\Admin\StateController::class);
-        Route::resource('pickup-centers', App\Http\Controllers\Admin\PickupCenterController::class);
+        Route::resource('states', StateController::class);
+        Route::resource('pickup-centers', PickupCenterController::class);
 
         // ==================== Payments ====================
-        Route::resource('payments', App\Http\Controllers\Admin\PaymentController::class)->only(['index', 'show', 'update']);
+        Route::resource('payments', PaymentController::class)->only(['index', 'show', 'update']);
+
+        // ✅ Bank Settings Route
+        Route::post('bank-settings', [PaymentController::class, 'updateBankSettings'])->name('bank-settings.update');
 
         // ==================== Support ====================
-        Route::resource('supports', App\Http\Controllers\Admin\SupportController::class);
+        Route::resource('supports', SupportController::class);
 
         // ==================== Upgrades ====================
-        Route::resource('upgrades', App\Http\Controllers\Admin\UpgradeController::class)->only(['index', 'show']);
+        Route::resource('upgrades', UpgradeController::class)->only(['index', 'show']);
 
         // ==================== Wallets & Transactions ====================
-        Route::resource('wallets', App\Http\Controllers\Admin\WalletController::class)->only(['index', 'show']);
-        Route::resource('wallet-transactions', App\Http\Controllers\Admin\WalletTransactionController::class)->only(['index', 'show']);
+        Route::resource('wallets', WalletController::class)->only(['index', 'show']);
+        Route::resource('wallet-transactions', WalletTransactionController::class)->only(['index', 'show']);
 
         // ==================== VTU Management ====================
         Route::prefix('vtu')->name('vtu.')->group(function () {
-            Route::resource('providers', App\Http\Controllers\Admin\Vtu\ProviderController::class);
-            Route::resource('plans', App\Http\Controllers\Admin\Vtu\PlanController::class);
-            Route::resource('api-settings', App\Http\Controllers\Admin\Vtu\ApiSettingController::class);
-            Route::resource('transactions', App\Http\Controllers\Admin\Vtu\TransactionController::class)->only(['index', 'show']);
+            Route::resource('providers', ProviderController::class);
+            Route::resource('plans', PlanController::class);
+            Route::resource('api-settings', ApiSettingController::class);
+            Route::resource('transactions', TransactionController::class)->only(['index', 'show']);
         });
 
-        Route::resource('admins', App\Http\Controllers\Admin\AdminController::class);
-        Route::get('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'edit'])->name('profile.edit');
-Route::put('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
+        // ==================== Admins & Profile ====================
+        Route::resource('admins', AdminController::class);
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
-Route::get('/settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
-Route::post('/settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+        // ==================== Settings ====================
+        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     });
-    
+
 });

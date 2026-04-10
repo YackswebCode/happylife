@@ -9,17 +9,19 @@ class Package extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'price',
-        'pv',
-        'product_entitlement',
-        'direct_bonus_amount',
-        'pairing_cap',
-        'description',
-        'is_active',
-        'order'
-    ];
+   protected $fillable = [
+    'name',
+    'price',
+    'pv',
+    'product_entitlement',
+    'direct_bonus_amount',
+    'indirect_bonus_amount', 
+    'upgrade_bonus_amount',  
+    'pairing_cap',
+    'description',
+    'is_active',
+    'order'
+];
 
     protected $casts = [
         'price' => 'float',

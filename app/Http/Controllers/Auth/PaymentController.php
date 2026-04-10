@@ -302,4 +302,47 @@ class PaymentController extends Controller
             $current = User::find($current->placement_id);
         }
     }
+
+    public function processBankTransfer(Request $request)
+{
+    $request->validate([
+        'proof_of_payment' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+    ]);
+
+    $user = Auth::user();
+
+    if (!$user) {
+        return back()->with('error', 'User not authenticated.');
+    }
+
+    if ($user->status === 'active') {
+        return back()->with('error', 'You are already activated.');
+    }
+
+    $package = Package::find($user->package_id);
+
+    if (!$package) {
+        return back()->with('error', 'Package not found.');
+    }
+
+    // Upload file
+    $filePath = $request->file('proof_of_payment')->store('payments', 'public');
+
+    // Save payment
+    Payment::create([
+        'user_id' => $user->id,
+        'package_id' => $package->id,
+        'amount' => $package->price,
+        'payment_method' => 'bank_transfer',
+        'reference' => 'BT' . time(),
+        'gateway_reference' => null,
+        'status' => 'pending',
+        'proof_url' => $filePath, 
+        'authorization_url' => null,
+        'gateway_response' => null,
+        'description' => 'Bank transfer awaiting admin approval',
+    ]);
+
+    return back()->with('success', 'Payment submitted successfully. Await admin approval.');
+}
 }

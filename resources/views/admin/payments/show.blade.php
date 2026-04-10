@@ -55,13 +55,11 @@
                             <th>Status:</th>
                             <td>
                                 @php
-                                    $statusClass = [
-                                        'pending' => 'warning',
-                                        'completed' => 'success',
-                                        'failed' => 'danger',
-                                        'cancelled' => 'secondary',
-                                        'refunded' => 'info',
-                                    ][$payment->status] ?? 'secondary';
+                                $statusClass = [
+                                    'pending' => 'warning',
+                                    'paid' => 'success',
+                                    'cancelled' => 'danger',
+                                  ][$payment->status] ?? 'secondary';
                                 @endphp
                                 <span class="badge bg-{{ $statusClass }}">{{ ucfirst($payment->status) }}</span>
                             </td>
@@ -110,13 +108,11 @@
                         @method('PUT')
                         <div class="row">
                             <div class="col-md-6">
-                                <select name="status" class="form-select">
-                                    <option value="pending" {{ $payment->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="completed" {{ $payment->status == 'completed' ? 'selected' : '' }}>Completed</option>
-                                    <option value="failed" {{ $payment->status == 'failed' ? 'selected' : '' }}>Failed</option>
-                                    <option value="cancelled" {{ $payment->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                    <option value="refunded" {{ $payment->status == 'refunded' ? 'selected' : '' }}>Refunded</option>
-                                </select>
+                               <select name="status" class="form-select">
+                                <option value="pending" {{ $payment->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="paid" {{ $payment->status == 'paid' ? 'selected' : '' }}>Paid</option>
+                                <option value="cancelled" {{ $payment->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                              </select>
                             </div>
                             <div class="col-md-6">
                                 <button type="submit" class="btn btn-red">Update Status</button>

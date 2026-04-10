@@ -107,5 +107,36 @@
         </div>
         @endif
     </div>
+    <div class="card border-0 shadow-sm mt-4">
+   <div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Bank Details</h5>
+    </div>
+    <div class="card-body">
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+
+        <form action="{{ route('admin.bank-settings.update') }}" method="POST">
+            @csrf
+            <div class="mb-3">
+                <label for="bank_name" class="form-label">Bank Name</label>
+                <input type="text" class="form-control" id="bank_name" name="bank_name" value="{{ old('bank_name', $bank->bank_name ?? '') }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="account_number" class="form-label">Account Number</label>
+                <input type="text" class="form-control" id="account_number" name="account_number" value="{{ old('account_number', $bank->account_number ?? '') }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="account_name" class="form-label">Account Name</label>
+                <input type="text" class="form-control" id="account_name" name="account_name" value="{{ old('account_name', $bank->account_name ?? '') }}" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Update Bank Details</button>
+        </form>
+    </div>
+</div>
 </div>
 @endsection

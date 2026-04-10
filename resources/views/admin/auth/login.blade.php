@@ -80,13 +80,6 @@
                     </form>
                 </div>
             </div>
-
-            <div class="alert alert-light border mt-4 text-center">
-                <div class="d-flex align-items-center justify-content-center">
-                    <i class="bi bi-shield-check text-success me-2"></i>
-                    <small class="text-muted">Secure admin access only</small>
-                </div>
-            </div>
         </div>
     </div>
 </div>
