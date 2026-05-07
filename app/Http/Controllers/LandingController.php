@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/LandingController.php
 
 namespace App\Http\Controllers;
 
@@ -8,6 +7,9 @@ use App\Models\Setting;
 
 class LandingController extends Controller
 {
+    /**
+     * Home page
+     */
     public function index()
     {
         // Fetch products
@@ -17,7 +19,7 @@ class LandingController extends Controller
             ->limit(8)
             ->get();
 
-        // Fetch all settings – the corrected get() method will now work
+        // Fetch all settings with fallback defaults
         $settings = [
             'hero_badge'       => Setting::get('hero_badge', '🚀 Join The Revolution'),
             'hero_title'       => Setting::get('hero_title', 'Build Your <span class="text-warning">Financial Freedom</span> Empire'),
@@ -40,7 +42,7 @@ class LandingController extends Controller
             'cta_features'     => Setting::get('cta_features', []),
         ];
 
-        // Provide default features/steps/team if DB arrays are empty
+        // Default arrays if DB returns empty
         if (empty($settings['landing_features'])) {
             $settings['landing_features'] = [
                 ['title' => 'Binary MLM Network', 'description' => 'Build your network with our efficient binary structure...', 'icon' => 'bi-diagram-2'],
@@ -71,12 +73,40 @@ class LandingController extends Controller
         return view('landing.index', compact('products', 'settings'));
     }
 
+    /**
+     * About page
+     */
+    public function about()
+    {
+        // You can load settings or just return a static view
+        return view('landing.about');   // adjust view path as needed
+    }
+
+    /**
+     * FAQ page
+     */
     public function faq()
     {
         $faqs = [
             ['question' => 'What is Happylife Multipurpose Int\'l?', 'answer' => 'Happylife is a Hybrid MLM + E-Commerce + Reward + VTU Services platform...'],
-            // ... other FAQs
+            // ... add more FAQs
         ];
         return view('landing.faq', compact('faqs'));
+    }
+
+    /**
+     * Privacy Policy page
+     */
+    public function privacy()
+    {
+        return view('landing.privacy'); // adjust the view path if needed
+    }
+
+    /**
+     * Terms and Conditions page
+     */
+    public function terms()
+    {
+        return view('landing.terms');   // adjust the view path if needed
     }
 }

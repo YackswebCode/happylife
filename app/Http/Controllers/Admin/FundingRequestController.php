@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\FundingRequest;
+use App\Models\Wallet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FundingRequestController extends Controller
 {
@@ -25,12 +27,8 @@ class FundingRequestController extends Controller
                       ->orWhere('username', 'like', "%{$search}%");
                 })->orWhere('transaction_id', 'like', "%{$search}%");
             })
-            ->when($status, function ($query, $status) {
-                return $query->where('status', $status);
-            })
-            ->when($payment_method, function ($query, $payment_method) {
-                return $query->where('payment_method', $payment_method);
-            })
+            ->when($status, fn($q) => $q->where('status', $status))
+            ->when($payment_method, fn($q) => $q->where('payment_method', $payment_method))
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -49,29 +47,46 @@ class FundingRequestController extends Controller
 
     /**
      * Update the status of the funding request.
+     * When approved, credit the user's shopping wallet.
      */
     public function update(Request $request, FundingRequest $fundingRequest)
     {
         $request->validate([
-            'status'       => 'required|in:pending,approved,rejected',
-            'admin_notes'  => 'nullable|string|max:1000',
+            'status'      => 'required|in:pending,approved,rejected',
+            'admin_notes' => 'nullable|string|max:1000',
         ]);
 
-        $data = [
-            'status'      => $request->status,
-            'admin_notes' => $request->admin_notes,
-        ];
+        $oldStatus = $fundingRequest->status;
+        $newStatus = $request->status;
 
-        // If approved, set approved_at timestamp
-        if ($request->status == 'approved' && $fundingRequest->status != 'approved') {
-            $data['approved_at'] = now();
-        }
+        DB::transaction(function () use ($fundingRequest, $newStatus, $oldStatus, $request) {
+            // Prepare update data
+            $data = [
+                'status'      => $newStatus,
+                'admin_notes' => $request->admin_notes,
+            ];
 
-        $fundingRequest->update($data);
+            // If newly approved
+            if ($newStatus === 'approved' && $oldStatus !== 'approved') {
+                $data['approved_at'] = now();
 
-        // If approved, you might want to credit the user's wallet here
-        // This could be done via an event listener or directly in the controller
-        // For now, we just update status
+                // Credit the user's shopping wallet
+                $wallet = Wallet::firstOrCreate(
+                    [
+                        'user_id' => $fundingRequest->user_id,
+                        'type'    => 'shopping',   // you can change this to whatever wallet type you need
+                    ],
+                    [
+                        'balance'        => 0.00,
+                        'locked_balance' => 0.00,
+                    ]
+                );
+
+                $wallet->increment('balance', $fundingRequest->amount);
+            }
+
+            $fundingRequest->update($data);
+        });
 
         return redirect()->route('admin.funding-requests.index')
             ->with('success', 'Funding request status updated successfully.');

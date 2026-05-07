@@ -114,7 +114,7 @@
                             <span class="fs-5 fw-bold text-white">{{ $siteName }}<span class="text-red-happylife">.</span></span>
                         @endif
                     </a>
-                    <p class="text-secondary small">Hybrid MLM + E-Commerce + Reward + VTU Services Platform</p>
+                    <p class="text-secondary small">Happylife helps families get affordable food, stay healthy, enjoy VTU services and earn daily income. Making life and shopping Easy for everyone.</p>
                 </div>
 
                 <div class="col-md-3 mb-4">
@@ -124,6 +124,8 @@
                         <li><a class="text-secondary text-decoration-none d-block mb-1" href="{{ route('about') }}">About Us</a></li>
                         <li><a class="text-secondary text-decoration-none d-block mb-1" href="{{ route('faq') }}">FAQ</a></li>
                         <li><a class="text-secondary text-decoration-none d-block" href="{{ route('contact') }}">Contact</a></li>
+                        <li><a class="text-secondary text-decoration-none d-block" href="{{ route('privacy') }}">Privacy Policy</a>
+                        <li><a class="text-secondary text-decoration-none d-block" href="{{ route('terms') }}">Terms & Conditions</a>
                     </ul>
                 </div>
 

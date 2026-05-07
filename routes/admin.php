@@ -73,8 +73,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // ==================== Authenticated Admin Routes ====================
     Route::middleware('auth:admin')->group(function () {
 
-        // Logout
-        Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+        // Logout (accepts both GET and POST for convenience)
+        Route::match(['get', 'post'], 'logout', [LoginController::class, 'logout'])->name('logout');
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -116,7 +116,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // ==================== Payments ====================
         Route::resource('payments', PaymentController::class)->only(['index', 'show', 'update']);
 
-        // ✅ Bank Settings Route
+        // Bank Settings Route
         Route::post('bank-settings', [PaymentController::class, 'updateBankSettings'])->name('bank-settings.update');
 
         // ==================== Support ====================
@@ -146,5 +146,4 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     });
-
 });

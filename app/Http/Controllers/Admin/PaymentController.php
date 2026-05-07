@@ -5,17 +5,24 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\BankSetting;
+use App\Services\MlmDistributionService;
 use Illuminate\Http\Request;
-use App\Models\User;
 
 class PaymentController extends Controller
 {
+    protected $mlmService;
+
+    public function __construct(MlmDistributionService $mlmService)
+    {
+        $this->mlmService = $mlmService;
+    }
+
     /**
      * Display payments and bank settings.
      */
     public function index(Request $request)
     {
-        $bank = BankSetting::first(); // load bank settings
+        $bank = BankSetting::first();
 
         $search = $request->input('search');
         $status = $request->input('status');
@@ -44,6 +51,56 @@ class PaymentController extends Controller
     }
 
     /**
+     * Show a specific payment.
+     */
+    public function show(Payment $payment)
+    {
+        $payment->load(['user', 'package']);
+        return view('admin.payments.show', compact('payment'));
+    }
+
+    /**
+     * Update payment status (admin approves bank transfer).
+     */
+    public function update(Request $request, Payment $payment)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,paid,cancelled',
+        ]);
+
+        $oldStatus = $payment->status;
+        $newStatus = $request->status;
+
+        $payment->status = $newStatus;
+        $payment->save();
+
+        $user = $payment->user;
+        if ($user) {
+            if ($newStatus === 'paid') {
+                // Activate user if not already active
+                if ($user->status !== 'active') {
+                    $user->payment_status = 'paid';
+                    $user->activated_at = now();
+                    $user->status = 'active';
+                    $user->package_id = $payment->package_id;
+                    $user->save();
+                }
+
+                // Run MLM distribution only if the payment wasn't already processed
+                if (!$payment->processed) {
+                    $this->mlmService->distribute($payment);
+                }
+            } elseif ($newStatus === 'cancelled') {
+                $user->payment_status = 'unpaid';
+                $user->save();
+            }
+        }
+
+        return redirect()->route('admin.payments.index')
+            ->with('success', 'Payment status updated successfully.');
+    }
+
+    /**
      * Update or create bank settings.
      */
     public function updateBankSettings(Request $request)
@@ -60,43 +117,5 @@ class PaymentController extends Controller
         );
 
         return back()->with('success', 'Bank details updated successfully.');
-    }
-
-    /**
-     * Show a specific payment.
-     */
-    public function show(Payment $payment)
-    {
-        $payment->load(['user', 'package']);
-        return view('admin.payments.show', compact('payment'));
-    }
-
-    /**
-     * Update payment status.
-     */
-    public function update(Request $request, Payment $payment)
-    {
-        $request->validate([
-            'status' => 'required|in:pending,paid,cancelled',
-        ]);
-
-        $payment->status = $request->status;
-        $payment->save();
-
-        $user = $payment->user;
-        if ($user) {
-            if ($request->status === 'paid') {
-                $user->payment_status = 'paid';
-                $user->activated_at = now();
-                $user->status = 'active';
-                $user->save();
-            } elseif ($request->status === 'cancelled') {
-                $user->payment_status = 'unpaid';
-                $user->save();
-            }
-        }
-
-        return redirect()->route('admin.payments.index')
-            ->with('success', 'Payment status updated successfully.');
     }
 }

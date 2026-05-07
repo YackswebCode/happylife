@@ -28,6 +28,10 @@ Route::get('/about', [LandingController::class, 'about'])->name('about');
 Route::get('/contact', [LandingController::class, 'contact'])->name('contact');
 Route::get('/faq', [LandingController::class, 'faq'])->name('faq');
 
+// Legal pages
+Route::get('/privacy-policy', [LandingController::class, 'privacy'])->name('privacy');
+Route::get('/terms-and-conditions', [LandingController::class, 'terms'])->name('terms');
+
 // Authentication
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
@@ -36,7 +40,7 @@ Route::get('/check-referral/{code}', [RegisterController::class, 'checkReferralC
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Email verification (requires auth but not verified)
 Route::get('/email/verify', [VerifyController::class, 'showVerifyForm'])->name('verification.notice');

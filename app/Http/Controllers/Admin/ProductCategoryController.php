@@ -32,13 +32,22 @@ class ProductCategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:product_categories,slug',
+            'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
-            'is_active' => 'sometimes|boolean',
-            'sort_order' => 'nullable|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_active'   => 'sometimes|boolean',
+            'sort_order'  => 'nullable|integer|min:0',
+            'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        // Generate a unique slug from the name
+        $baseSlug = Str::slug($validated['name']);
+        $slug = $baseSlug;
+        $counter = 1;
+        while (ProductCategory::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+        $validated['slug'] = $slug;
 
         $validated['is_active'] = $request->has('is_active');
 
@@ -66,13 +75,24 @@ class ProductCategoryController extends Controller
     public function update(Request $request, ProductCategory $productCategory)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:product_categories,slug,' . $productCategory->id,
+            'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
-            'is_active' => 'sometimes|boolean',
-            'sort_order' => 'nullable|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_active'   => 'sometimes|boolean',
+            'sort_order'  => 'nullable|integer|min:0',
+            'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        // Regenerate slug only if the name has changed
+        if ($validated['name'] !== $productCategory->name) {
+            $baseSlug = Str::slug($validated['name']);
+            $slug = $baseSlug;
+            $counter = 1;
+            while (ProductCategory::where('slug', $slug)->where('id', '!=', $productCategory->id)->exists()) {
+                $slug = $baseSlug . '-' . $counter;
+                $counter++;
+            }
+            $validated['slug'] = $slug;
+        }
 
         $validated['is_active'] = $request->has('is_active');
 
